@@ -28,6 +28,7 @@ import {
 } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
 import { formatExamDate } from "@/lib/date-utils"
+import MarkingSchemeManager from "@/components/marking-scheme-manager"
 
 interface PendingAnswerKey {
   id: string
@@ -690,10 +691,11 @@ export default function AdminDashboard() {
         )}
 
         <Tabs defaultValue="exams" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-5">
+          <TabsList className="grid w-full grid-cols-6">
             <TabsTrigger value="exams">Manage Exams</TabsTrigger>
             <TabsTrigger value="upload">Upload Answer Key</TabsTrigger>
             <TabsTrigger value="manual">Manual Entry</TabsTrigger>
+            <TabsTrigger value="marking">Marking Schemes</TabsTrigger>
             <TabsTrigger value="pending" className="relative">
               Pending Approvals
               {pendingKeys.length > 0 && (
@@ -747,7 +749,7 @@ export default function AdminDashboard() {
                     <Checkbox
                       id="hasCombinations"
                       checked={newExamHasCombinations}
-                      onCheckedChange={setNewExamHasCombinations}
+                      onCheckedChange={(checked) => setNewExamHasCombinations(checked === true)}
                     />
                     <Label htmlFor="hasCombinations">This exam has subject combinations</Label>
                   </div>
@@ -1473,6 +1475,109 @@ export default function AdminDashboard() {
                   </div>
                 </CardContent>
               </Card>
+            </div>
+          </TabsContent>
+          <TabsContent value="marking">
+            <div className="space-y-6">
+              <Card>
+                <CardHeader>
+                  <CardTitle>Select Exam for Marking Scheme Management</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                    <div>
+                      <Label htmlFor="markingExam">Exam</Label>
+                      <Select value={answerKeyExam} onValueChange={setAnswerKeyExam}>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select exam" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {exams.map((exam) => (
+                            <SelectItem key={exam.id} value={`${exam.name}|${exam.year}`}>
+                              {exam.name} {exam.year}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div>
+                      <Label htmlFor="markingDate">Date</Label>
+                      <Select value={answerKeyDate} onValueChange={setAnswerKeyDate} disabled={!answerKeyExam}>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select date" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {answerKeyExam &&
+                            exams
+                              .find((exam) => `${exam.name}|${exam.year}` === answerKeyExam)
+                              ?.examDates.map((date) => (
+                                <SelectItem key={date.id} value={date.date}>
+                                  {formatExamDate(new Date(date.date))}
+                                </SelectItem>
+                              ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div>
+                      <Label htmlFor="markingShift">Shift</Label>
+                      <Select value={answerKeyShift} onValueChange={setAnswerKeyShift} disabled={!answerKeyDate}>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select shift" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {answerKeyExam &&
+                            answerKeyDate &&
+                            exams
+                              .find((exam) => `${exam.name}|${exam.year}` === answerKeyExam)
+                              ?.examDates.find((date) => date.date === answerKeyDate)
+                              ?.examShifts.map((shift) => (
+                                <SelectItem key={shift.id} value={shift.shiftName}>
+                                  {shift.shiftName}
+                                </SelectItem>
+                              ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div>
+                      <Label htmlFor="markingCombination">Combination (Optional)</Label>
+                      <Select
+                        value={answerKeyCombination}
+                        onValueChange={setAnswerKeyCombination}
+                        disabled={!answerKeyShift}
+                      >
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select combination" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {answerKeyExam &&
+                            answerKeyDate &&
+                            answerKeyShift &&
+                            exams
+                              .find((exam) => `${exam.name}|${exam.year}` === answerKeyExam)
+                              ?.examDates.find((date) => date.date === answerKeyDate)
+                              ?.examShifts.find((shift) => shift.shiftName === answerKeyShift)
+                              ?.subjectCombinations.map((combo) => (
+                                <SelectItem key={combo.id} value={combo.name}>
+                                  {combo.name}
+                                </SelectItem>
+                              ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+
+              {answerKeyExam && answerKeyDate && answerKeyShift && (
+                <MarkingSchemeManager
+                  examName={answerKeyExam.split("|")[0]}
+                  examYear={answerKeyExam.split("|")[1]}
+                  examDate={answerKeyDate}
+                  shiftName={answerKeyShift}
+                  subjectCombination={answerKeyCombination}
+                  onSchemeUpdate={fetchStats}
+                />
+              )}
             </div>
           </TabsContent>
         </Tabs>

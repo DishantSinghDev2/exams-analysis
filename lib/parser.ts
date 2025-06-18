@@ -3,6 +3,7 @@ interface ParsedResponse {
   chosenOption: string
   status: "Answered" | "Not Answered"
   subject: string
+  imageUrl?: string
 }
 
 interface ParsedData {
@@ -16,44 +17,44 @@ interface ParsedData {
 }
 
 export async function parseResponseSheet(input: string): Promise<ParsedData> {
-  let content = input
+  let content = input;
 
   // If it's a URL, fetch the content
   if (input.startsWith("http")) {
     try {
-      const response = await fetch(input)
-      content = await response.text()
+      const response = await fetch(input);
+      content = await response.text();
     } catch (error) {
-      throw new Error("Failed to fetch response sheet from URL")
+      throw new Error("Failed to fetch response sheet from URL");
     }
   }
 
   // Check if it's HTML content
   if (content.includes("<body") || content.includes("<table")) {
-    return parseHTMLResponseSheet(content)
+    return parseHTMLResponseSheet(content);
   } else {
-    return parseTextResponseSheet(content)
+    return parseTextResponseSheet(content);
   }
 }
 
 function parseHTMLResponseSheet(content: string): ParsedData {
   // Extract basic information from the HTML table
-  const applicationNoMatch = content.match(/<td>Application No<\/td>\s*<td>(\d+)<\/td>/)
-  const candidateNameMatch = content.match(/<td>Candidate Name<\/td>\s*<td>([^<]+)<\/td>/)
-  const rollNoMatch = content.match(/<td>Roll No\.<\/td>\s*<td>([^<]+)<\/td>/)
-  const testDateMatch = content.match(/<td>Test Date<\/td>\s*<td>([^<]+)<\/td>/)
-  const testTimeMatch = content.match(/<td>Test Time<\/td>\s*<td>([^<]+)<\/td>/)
-  const subjectMatch = content.match(/<td>Subject<\/td>\s*<td>([^<]+)<\/td>/)
+  const applicationNoMatch = content.match(/<td>Application No<\/td>\s*<td>(\d+)<\/td>/);
+  const candidateNameMatch = content.match(/<td>Candidate Name<\/td>\s*<td>([^<]+)<\/td>/);
+  const rollNoMatch = content.match(/<td>Roll No\.<\/td>\s*<td>([^<]+)<\/td>/);
+  const testDateMatch = content.match(/<td>Test Date<\/td>\s*<td>([^<]+)<\/td>/);
+  const testTimeMatch = content.match(/<td>Test Time<\/td>\s*<td>([^<]+)<\/td>/);
+  const subjectMatch = content.match(/<td>Subject<\/td>\s*<td>([^<]+)<\/td>/);
 
   if (!applicationNoMatch || !candidateNameMatch || !rollNoMatch) {
-    throw new Error("Invalid response sheet format - missing required student information")
+    throw new Error("Invalid response sheet format - missing required student information");
   }
 
-  const responses: ParsedResponse[] = []
+  const responses: ParsedResponse[] = [];
 
   // Extract section information
-  const sectionMatches = content.matchAll(/<span class="bold">([^<]+)<\/span><\/div>/g)
-  const sections = Array.from(sectionMatches).map((match) => match[1])
+  const sectionMatches = content.matchAll(/<span class="bold">([^<]+)<\/span><\/div>/g);
+  const sections = Array.from(sectionMatches).map((match) => match[1]);
 
   // Extract questions from each question panel
   const questionPanels = content.matchAll(
@@ -74,6 +75,10 @@ function parseHTMLResponseSheet(content: string): ParsedData {
     const chosenOptionMatch = panelContent.match(
       /<td align="right">Chosen Option :<\/td>\s*<td class="bold">(\d+)<\/td>/,
     )
+
+    // Extract image URL
+    const imageMatch = panelContent.match(/<img[^>]+src="([^"]+)"/)
+    const imageUrl = imageMatch ? imageMatch[1] : null
 
     // Extract option IDs to map chosen option number to option ID
     const optionIds: string[] = []
@@ -100,6 +105,7 @@ function parseHTMLResponseSheet(content: string): ParsedData {
         chosenOption: chosenOptionId,
         status: statusMatch[1] as "Answered" | "Not Answered",
         subject: currentSection,
+        imageUrl: imageUrl, // Add image URL to response
       })
     }
   }

@@ -1,38 +1,5 @@
 import { prisma } from "./prisma"
-
-interface AnalysisResult {
-  subjectWiseScores: Record<
-    string,
-    {
-      correct: number
-      incorrect: number
-      unattempted: number
-      score: number
-      totalQuestions: number
-      maxScore: number
-      attempted: number
-      accuracy: number
-    }
-  >
-  totalScore: number
-  maxTotalScore: number
-  totalQuestions: number
-  attemptedQuestions: number
-  correctAnswers: number
-  incorrectAnswers: number
-  unansweredQuestions: number
-  accuracy: number
-  completionRate: number
-  hasMultipleSubjects: boolean
-  detailedComparison: Array<{
-    questionId: string
-    subject: string
-    studentAnswer: string
-    correctAnswer: string[]
-    status: "Correct" | "Incorrect" | "Unattempted"
-    marksAwarded: number
-  }>
-}
+import { type AnalysisResult } from "@/types"
 
 export async function analyzeResponse(
   examName: string,
@@ -45,6 +12,7 @@ export async function analyzeResponse(
     chosenOption: string
     status: string
     subject: string
+    imageUrl?: string
   }>,
 ): Promise<AnalysisResult | null> {
   // Get answer keys for all subjects
@@ -85,7 +53,7 @@ export async function analyzeResponse(
   let unansweredQuestions = 0
 
   // Get unique subjects
-  const subjects = [...new Set(responses.map((r) => r.subject))]
+  const subjects = Array.from(new Set(responses.map((r) => r.subject)))
   const hasMultipleSubjects = subjects.length > 1
 
   // Process each subject
@@ -153,6 +121,7 @@ export async function analyzeResponse(
         correctAnswer: [correctAnswerId || "Unknown"],
         status,
         marksAwarded,
+        imageUrl: response.imageUrl || "",
       })
     }
 

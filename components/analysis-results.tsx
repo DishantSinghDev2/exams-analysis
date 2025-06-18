@@ -1,9 +1,12 @@
 "use client"
 
+import { useState } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Progress } from "@/components/ui/progress"
-import { BarChart3, Target, TrendingUp, Award, CheckCircle, XCircle, Clock, BookOpen } from "lucide-react"
+import { Button } from "@/components/ui/button"
+import { BarChart3, Target, TrendingUp, Award, CheckCircle, XCircle, Clock, BookOpen, Eye } from "lucide-react"
+import QuestionImageViewer from "./question-image-viewer"
 
 interface AnalysisResult {
   subjectWiseScores: Record<
@@ -36,6 +39,8 @@ interface AnalysisResult {
     correctAnswer: string[]
     status: "Correct" | "Incorrect" | "Unattempted"
     marksAwarded: number
+    imageUrl?: string
+    questionNumber?: string
   }>
 }
 
@@ -45,7 +50,23 @@ interface AnalysisResultsProps {
 }
 
 export default function AnalysisResults({ result, onReset }: AnalysisResultsProps) {
+  const [selectedQuestion, setSelectedQuestion] = useState<any>(null)
+  const [isImageViewerOpen, setIsImageViewerOpen] = useState(false)
+
   const percentage = result.maxTotalScore > 0 ? (result.totalScore / result.maxTotalScore) * 100 : 0
+
+  const handleViewQuestion = (question: any, index: number) => {
+    setSelectedQuestion({
+      questionId: question.questionId,
+      questionNumber: `${index + 1}`,
+      imageUrl: question.imageUrl || `/placeholder.svg?height=400&width=600&text=Question+${index + 1}`,
+      selectedOption: question.studentAnswer,
+      correctOption: question.correctAnswer.join(", "),
+      status: question.status,
+      subject: question.subject,
+    })
+    setIsImageViewerOpen(true)
+  }
 
   return (
     <div className="space-y-6">
@@ -246,12 +267,14 @@ export default function AnalysisResults({ result, onReset }: AnalysisResultsProp
             <table className="w-full border-collapse border border-gray-300">
               <thead>
                 <tr className="bg-gray-50">
+                  <th className="border border-gray-300 p-2 text-left">Q.No</th>
                   <th className="border border-gray-300 p-2 text-left">Question ID</th>
                   {result.hasMultipleSubjects && <th className="border border-gray-300 p-2 text-left">Subject</th>}
                   <th className="border border-gray-300 p-2 text-left">Your Answer</th>
                   <th className="border border-gray-300 p-2 text-left">Correct Answer</th>
                   <th className="border border-gray-300 p-2 text-left">Status</th>
                   <th className="border border-gray-300 p-2 text-left">Marks</th>
+                  <th className="border border-gray-300 p-2 text-left">View</th>
                 </tr>
               </thead>
               <tbody>
@@ -266,6 +289,7 @@ export default function AnalysisResults({ result, onReset }: AnalysisResultsProp
                           : "bg-gray-50"
                     }
                   >
+                    <td className="border border-gray-300 p-2 font-medium">{index + 1}</td>
                     <td className="border border-gray-300 p-2 font-mono text-sm">{item.questionId}</td>
                     {result.hasMultipleSubjects && (
                       <td className="border border-gray-300 p-2">
@@ -301,6 +325,17 @@ export default function AnalysisResults({ result, onReset }: AnalysisResultsProp
                         {item.marksAwarded}
                       </span>
                     </td>
+                    <td className="border border-gray-300 p-2">
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => handleViewQuestion(item, index)}
+                        className="flex items-center gap-1"
+                      >
+                        <Eye className="h-3 w-3" />
+                        View
+                      </Button>
+                    </td>
                   </tr>
                 ))}
               </tbody>
@@ -318,6 +353,15 @@ export default function AnalysisResults({ result, onReset }: AnalysisResultsProp
           Analyze Another Response Sheet
         </button>
       </div>
+
+      {/* Question Image Viewer */}
+      {selectedQuestion && (
+        <QuestionImageViewer
+          isOpen={isImageViewerOpen}
+          onClose={() => setIsImageViewerOpen(false)}
+          questionData={selectedQuestion}
+        />
+      )}
     </div>
   )
 }

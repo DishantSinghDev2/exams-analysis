@@ -42,10 +42,37 @@ export interface DetailedComparison {
 }
 
 export interface AnalysisResult {
-  subjectWiseScores: Record<string, SubjectScore>
+  subjectWiseScores: Record<
+    string,
+    {
+      correct: number
+      incorrect: number
+      unattempted: number
+      score: number
+      totalQuestions: number
+      maxScore: number
+      attempted: number
+      accuracy: number
+    }
+  >
   totalScore: number
   maxTotalScore: number
-  detailedComparison: DetailedComparison[]
+  totalQuestions: number
+  attemptedQuestions: number
+  correctAnswers: number
+  incorrectAnswers: number
+  unansweredQuestions: number
+  accuracy: number
+  completionRate: number
+  hasMultipleSubjects: boolean
+  detailedComparison: Array<{
+    questionId: string
+    subject: string
+    studentAnswer: string
+    correctAnswer: string[]
+    status: "Correct" | "Incorrect" | "Unattempted"
+    marksAwarded: number
+  }>
 }
 
 export interface BlogPost {
