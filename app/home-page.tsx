@@ -302,7 +302,11 @@ export default function HomePage() {
               <Badge variant="secondary" className="text-sm px-3 py-1">
                 {selectedExam.displayName}
               </Badge>
-              {selectedExam.description && <span className="text-sm text-gray-500">• {selectedExam.description}</span>}
+              <span className="text-sm text-gray-500">
+                • {(selectedExam.description ?? "").length > 100
+                  ? `${(selectedExam.description ?? "").slice(0, 100)}...`
+                  : selectedExam.description}
+              </span>
             </div>
           )}
         </div>
@@ -338,7 +342,6 @@ export default function HomePage() {
                         <SelectItem key={exam.id} value={exam.id}>
                           <div className="flex flex-col">
                             <span className="font-medium">{exam.displayName}</span>
-                            {exam.description && <span className="text-xs text-gray-500">{exam.description}</span>}
                           </div>
                         </SelectItem>
                       ))}

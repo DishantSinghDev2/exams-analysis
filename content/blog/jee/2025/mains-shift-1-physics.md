@@ -8,8 +8,6 @@ shift: "Shift 1"
 author: "Physics Expert"
 ---
 
-# JEE Mains 2025 Shift 1 Physics Analysis
-
 Detailed breakdown of the Physics section from JEE Mains 2025 Shift 1.
 
 ## Overall Assessment
