@@ -1,0 +1,87 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model Admin {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  githubId  String   @unique
+  name      String?
+  avatar    String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([email])
+  @@map("admins")
+}
+
+model AnswerKey {
+  id                String   @id @default(cuid())
+  examDate          String
+  shift             String
+  subjectCombination String
+  subject           String
+  answers           Json
+  isApproved        Boolean  @default(false)
+  submittedBy       String?
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  @@unique([examDate, shift, subjectCombination, subject])
+  @@index([examDate, shift, subjectCombination])
+  @@index([isApproved])
+  @@map("answer_keys")
+}
+
+model MarkingScheme {
+  id                String @id @default(cuid())
+  examDate          String
+  shift             String
+  subjectCombination String
+  subject           String
+  correctMarks      Int    @default(5)
+  incorrectMarks    Int    @default(-1)
+  unattemptedMarks  Int    @default(0)
+  totalQuestions    Int    @default(50)
+  totalMarks        Int    @default(250)
+
+  @@unique([examDate, shift, subjectCombination, subject])
+  @@index([examDate, shift, subjectCombination])
+  @@map("marking_schemes")
+}
+
+model StudentResponse {
+  id                String   @id @default(cuid())
+  examDate          String
+  shift             String
+  subjectCombination String
+  applicationNo     String?
+  candidateName     String?
+  rollNo            String?
+  responses         Json
+  analysisResult    Json?
+  createdAt         DateTime @default(now())
+
+  @@index([examDate, shift, subjectCombination])
+  @@index([createdAt])
+  @@map("student_responses")
+}
+
+model PendingAnswerKey {
+  id                String   @id @default(cuid())
+  examDate          String
+  shift             String
+  subjectCombination String
+  subject           String
+  answerKeyData     String   @db.Text
+  submittedBy       String
+  createdAt         DateTime @default(now())
+
+  @@index([createdAt])
+  @@map("pending_answer_keys")
+}
