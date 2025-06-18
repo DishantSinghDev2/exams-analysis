@@ -22,11 +22,11 @@ OUTPUT FORMAT: Return ONLY a JSON array with this exact structure:
 ]
 
 RULES:
-1. Extract only numeric question IDs and answer IDs
+1. Extract only numeric question IDs and answer IDs, which are typically long integers and are just after the Subject name(with subject code like 101-ENGLISH then the next two long integers are probablly the questionId and answerId resp.).
 2. Remove any subject names, codes, or metadata
 3. Generate sequential serial numbers starting from 1
 4. Return ONLY the JSON array, no other text
-5. If you can't find valid question/answer pairs, return an empty array []
+5. If you can't find valid question/answer pairs, then think creatively and try to extract them from the raw data.
 
 RAW ANSWER KEY DATA:
 ${rawAnswerKey}
@@ -35,6 +35,8 @@ ${rawAnswerKey}
     const result = await model.generateContent(prompt)
     const response = await result.response
     const text = response.text().trim()
+
+    console.log("AI response:", text)
 
     // Try to parse the JSON response
     let parsedData
