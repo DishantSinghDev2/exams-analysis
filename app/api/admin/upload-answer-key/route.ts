@@ -2,7 +2,7 @@ import { type NextRequest, NextResponse } from "next/server"
 import { getServerSession } from "next-auth"
 import { authOptions } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
-import { parseAnswerKey } from "@/lib/parser"
+import { parseAnswerKey, validateAnswerKeyFormat } from "@/lib/parser"
 
 export async function POST(request: NextRequest) {
   try {
@@ -12,14 +12,24 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ success: false, error: "Unauthorized" }, { status: 401 })
     }
 
-    const { examDate, shift, subjectCombination, answerKeyData } = await request.json()
+    const { examName, examYear, examDate, shiftName, subjectCombination, answerKeyData } = await request.json()
 
-    if (!examDate || !shift || !subjectCombination || !answerKeyData) {
+    if (!examName || !examYear || !examDate || !shiftName || !answerKeyData) {
       return NextResponse.json({ success: false, error: "Missing required fields" }, { status: 400 })
+    }
+
+    // Validate answer key format
+    const validation = validateAnswerKeyFormat(answerKeyData)
+    if (!validation.isValid) {
+      return NextResponse.json({ success: false, error: validation.error }, { status: 400 })
     }
 
     // Parse the answer key data
     const parsedAnswers = parseAnswerKey(answerKeyData)
+
+    if (parsedAnswers.length === 0) {
+      return NextResponse.json({ success: false, error: "No valid answer key entries found" }, { status: 400 })
+    }
 
     // Group by subject
     const subjectGroups = parsedAnswers.reduce(
@@ -29,8 +39,7 @@ export async function POST(request: NextRequest) {
         }
         acc[answer.subject].push({
           questionId: answer.questionId,
-          correctOptions: answer.correctOptions,
-          optionIds: answer.optionIds,
+          correctAnswerId: answer.correctAnswerId,
         })
         return acc
       },
@@ -41,10 +50,12 @@ export async function POST(request: NextRequest) {
     for (const [subject, answers] of Object.entries(subjectGroups)) {
       await prisma.answerKey.upsert({
         where: {
-          examDate_shift_subjectCombination_subject: {
+          examName_examYear_examDate_shiftName_subjectCombination_subject: {
+            examName,
+            examYear,
             examDate,
-            shift,
-            subjectCombination,
+            shiftName,
+            subjectCombination: subjectCombination || "",
             subject,
           },
         },
@@ -53,9 +64,11 @@ export async function POST(request: NextRequest) {
           isApproved: true,
         },
         create: {
+          examName,
+          examYear,
           examDate,
-          shift,
-          subjectCombination,
+          shiftName,
+          subjectCombination: subjectCombination || "",
           subject,
           answers,
           isApproved: true,
@@ -66,31 +79,36 @@ export async function POST(request: NextRequest) {
       // Create default marking scheme if not exists
       await prisma.markingScheme.upsert({
         where: {
-          examDate_shift_subjectCombination_subject: {
+          examName_examYear_examDate_shiftName_subjectCombination_subject: {
+            examName,
+            examYear,
             examDate,
-            shift,
-            subjectCombination,
+            shiftName,
+            subjectCombination: subjectCombination || "",
             subject,
           },
         },
         update: {},
         create: {
+          examName,
+          examYear,
           examDate,
-          shift,
-          subjectCombination,
+          shiftName,
+          subjectCombination: subjectCombination || "",
           subject,
-          correctMarks: 5,
+          correctMarks: 4,
           incorrectMarks: -1,
           unattemptedMarks: 0,
           totalQuestions: 50,
-          totalMarks: 250,
+          totalMarks: 200,
         },
       })
     }
 
     return NextResponse.json({
       success: true,
-      message: "Answer key uploaded successfully",
+      message: `Answer key uploaded successfully for ${Object.keys(subjectGroups).length} subject(s)`,
+      subjects: Object.keys(subjectGroups),
     })
   } catch (error) {
     console.error("Upload answer key error:", error)

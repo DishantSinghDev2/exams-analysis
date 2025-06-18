@@ -1,5 +1,5 @@
 import type { Metadata } from "next"
-import HomePage from "./client_page"
+import HomePage from "./home-page"
 
 export const metadata: Metadata = {
   title: "Exam Response Analyzer - Detailed Subject-wise Analysis",

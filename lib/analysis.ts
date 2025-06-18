@@ -25,9 +25,11 @@ interface AnalysisResult {
 }
 
 export async function analyzeResponse(
-  examDate: string,
-  shift: string,
-  subjectCombination: string,
+  examName: string,
+  examYear: string,
+  examDate: Date,
+  shiftName: string,
+  subjectCombination: string | null,
   responses: Array<{
     questionId: string
     chosenOption: string
@@ -38,8 +40,10 @@ export async function analyzeResponse(
   // Get answer keys for all subjects
   const answerKeys = await prisma.answerKey.findMany({
     where: {
+      examName,
+      examYear,
       examDate,
-      shift,
+      shiftName,
       subjectCombination,
       isApproved: true,
     },
@@ -52,8 +56,10 @@ export async function analyzeResponse(
   // Get marking schemes
   const markingSchemes = await prisma.markingScheme.findMany({
     where: {
+      examName,
+      examYear,
       examDate,
-      shift,
+      shiftName,
       subjectCombination,
     },
   })
@@ -73,11 +79,11 @@ export async function analyzeResponse(
     }>
 
     const markingScheme = markingSchemes.find((ms) => ms.subject === subject) || {
-      correctMarks: 5,
+      correctMarks: 4,
       incorrectMarks: -1,
       unattemptedMarks: 0,
       totalQuestions: 50,
-      totalMarks: 250,
+      totalMarks: 200,
     }
 
     let correct = 0

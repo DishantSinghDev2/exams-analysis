@@ -5,9 +5,9 @@ import { prisma } from "@/lib/prisma"
 
 export async function POST(request: NextRequest) {
   try {
-    const { examDate, shift, subjectCombination, responseInput } = await request.json()
+    const { examName, examYear, examDate, shiftName, subjectCombination, responseInput } = await request.json()
 
-    if (!examDate || !shift || !subjectCombination || !responseInput) {
+    if (!examName || !examYear || !examDate || !shiftName || !responseInput) {
       return NextResponse.json({ success: false, error: "Missing required fields" }, { status: 400 })
     }
 
@@ -17,8 +17,10 @@ export async function POST(request: NextRequest) {
     // Store the student response
     const studentResponse = await prisma.studentResponse.create({
       data: {
-        examDate,
-        shift,
+        examName,
+        examYear,
+        examDate: new Date(examDate),
+        shiftName,
         subjectCombination,
         applicationNo: parsedData.applicationNo,
         candidateName: parsedData.candidateName,
@@ -28,7 +30,14 @@ export async function POST(request: NextRequest) {
     })
 
     // Try to analyze with existing answer keys
-    const analysis = await analyzeResponse(examDate, shift, subjectCombination, parsedData.responses)
+    const analysis = await analyzeResponse(
+      examName,
+      examYear,
+      new Date(examDate),
+      shiftName,
+      subjectCombination,
+      parsedData.responses,
+    )
 
     if (analysis) {
       // Update the student response with analysis

@@ -3,9 +3,9 @@ import { prisma } from "@/lib/prisma"
 
 export async function POST(request: NextRequest) {
   try {
-    const { examDate, shift, subjectCombination, answerKeyData } = await request.json()
+    const { examName, examYear, examDate, shiftName, subjectCombination, answerKeyData } = await request.json()
 
-    if (!examDate || !shift || !subjectCombination || !answerKeyData) {
+    if (!examName || !examYear || !examDate || !shiftName || !answerKeyData) {
       return NextResponse.json({ success: false, error: "Missing required fields" }, { status: 400 })
     }
 
@@ -24,8 +24,10 @@ export async function POST(request: NextRequest) {
     for (const subject of subjects) {
       await prisma.pendingAnswerKey.create({
         data: {
-          examDate,
-          shift,
+          examName,
+          examYear,
+          examDate: new Date(examDate),
+          shiftName,
           subjectCombination,
           subject,
           answerKeyData,

@@ -91,29 +91,86 @@ export async function parseResponseSheet(input: string): Promise<ParsedData> {
   }
 }
 
+// Updated parser for new tab-separated format
 export function parseAnswerKey(answerKeyText: string): Array<{
   sno: string
   subject: string
   questionId: string
-  correctOptions: string[]
-  optionIds: string[]
+  correctAnswerId: string
 }> {
   const lines = answerKeyText.trim().split("\n")
   const answers = []
 
   for (let i = 1; i < lines.length; i++) {
-    // Skip header
-    const parts = lines[i].split("|").map((p) => p.trim())
-    if (parts.length >= 5) {
+    // Skip header and empty lines
+    const line = lines[i].trim()
+    if (!line) continue
+
+    // Split by tab or multiple spaces/pipes
+    const parts = line
+      .split(/\t+|\s{2,}|\|/)
+      .map((p) => p.trim())
+      .filter((p) => p)
+
+    if (parts.length >= 4) {
+      // Extract subject name (remove code prefix if present)
+      let subject = parts[1]
+      if (subject.includes("-")) {
+        subject = subject.split("-")[1].split("/")[0].trim()
+      }
+
       answers.push({
         sno: parts[0],
-        subject: parts[1],
+        subject: subject,
         questionId: parts[2],
-        correctOptions: parts[3].split(",").map((o) => o.trim()),
-        optionIds: parts[4].split(",").map((o) => o.trim()),
+        correctAnswerId: parts[3], // This is the correct answer ID
       })
     }
   }
 
   return answers
+}
+
+// Validate the new answer key format
+export function validateAnswerKeyFormat(answerKeyData: string): { isValid: boolean; error?: string } {
+  const lines = answerKeyData.trim().split("\n")
+
+  if (lines.length < 2) {
+    return { isValid: false, error: "Answer key must have at least a header and one data row" }
+  }
+
+  // Check header
+  const header = lines[0].toLowerCase()
+  if (!header.includes("sno") || !header.includes("subject") || !header.includes("questionid")) {
+    return { isValid: false, error: "Header must contain 'Sno', 'Subject', and 'QuestionID' columns" }
+  }
+
+  // Check data lines
+  for (let i = 1; i < lines.length; i++) {
+    const line = lines[i].trim()
+    if (!line) continue // Skip empty lines
+
+    const parts = line
+      .split(/\t+|\s{2,}|\|/)
+      .map((p) => p.trim())
+      .filter((p) => p)
+    if (parts.length < 4) {
+      return {
+        isValid: false,
+        error: `Row ${i + 1} must have at least 4 columns (Sno, Subject, QuestionID, Correct Answer ID)`,
+      }
+    }
+
+    // Validate question ID is numeric
+    if (!/^\d+$/.test(parts[2])) {
+      return { isValid: false, error: `Row ${i + 1}: Question ID must be numeric` }
+    }
+
+    // Validate answer ID is numeric
+    if (!/^\d+$/.test(parts[3])) {
+      return { isValid: false, error: `Row ${i + 1}: Answer ID must be numeric` }
+    }
+  }
+
+  return { isValid: true }
 }

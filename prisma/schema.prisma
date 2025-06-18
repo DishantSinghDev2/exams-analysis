@@ -20,82 +20,137 @@ model Admin {
   @@map("admins")
 }
 
-model ExamOption {
-  id                String   @id @default(cuid())
-  examDate          String
-  shift             String
-  subjectCombination String
-  examName          String   // e.g., "NEET 2025", "JEE Mains 2025"
-  isActive          Boolean  @default(true)
-  createdAt         DateTime @default(now())
-  updatedAt         DateTime @updatedAt
+model Exam {
+  id          String   @id @default(cuid())
+  name        String   @db.VarChar(100) // e.g., "NEET", "JEE Mains", "JEE Advanced", "CUET"
+  year        String   @db.VarChar(10)  // e.g., "2025"
+  description String?  @db.VarChar(500) // e.g., "National Eligibility cum Entrance Test"
+  hasSubjectCombinations Boolean @default(false) // Whether this exam has subject combinations
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 
-  @@unique([examDate, shift, subjectCombination])
+  examDates   ExamDate[]
+
+  @@unique([name, year])
   @@index([isActive])
-  @@index([examDate])
-  @@map("exam_options")
+  @@map("exams")
+}
+
+model ExamDate {
+  id       String   @id @default(cuid())
+  examId   String
+  date     DateTime // The actual exam date
+  isActive Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  exam       Exam        @relation(fields: [examId], references: [id], onDelete: Cascade)
+  examShifts ExamShift[]
+
+  @@index([examId])
+  @@index([date])
+  @@map("exam_dates")
+}
+
+model ExamShift {
+  id         String   @id @default(cuid())
+  examDateId String
+  shiftName  String   @db.VarChar(100) // e.g., "Shift 1", "Shift 2", "Morning", "Afternoon"
+  startTime  String?  @db.VarChar(20)  // e.g., "09:00 AM"
+  endTime    String?  @db.VarChar(20)  // e.g., "12:00 PM"
+  isActive   Boolean  @default(true)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  examDate            ExamDate              @relation(fields: [examDateId], references: [id], onDelete: Cascade)
+  subjectCombinations SubjectCombination[]
+
+  @@index([examDateId])
+  @@map("exam_shifts")
+}
+
+model SubjectCombination {
+  id          String   @id @default(cuid())
+  examShiftId String
+  name        String   @db.VarChar(100) // e.g., "PCB", "PCM", "PCMB", "Combination 1"
+  subjects    Json     // Array of subjects: ["Physics", "Chemistry", "Biology"]
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  examShift ExamShift @relation(fields: [examShiftId], references: [id], onDelete: Cascade)
+
+  @@index([examShiftId])
+  @@map("subject_combinations")
 }
 
 model AnswerKey {
   id                String   @id @default(cuid())
-  examDate          String
-  shift             String
-  subjectCombination String
-  subject           String
+  examName          String   @db.VarChar(100)
+  examYear          String   @db.VarChar(10)
+  examDate          DateTime
+  shiftName         String   @db.VarChar(100)
+  subjectCombination String? @db.VarChar(100)
+  subject           String   @db.VarChar(100)
   answers           Json
   isApproved        Boolean  @default(false)
-  submittedBy       String?
+  submittedBy       String?  @db.VarChar(100)
   createdAt         DateTime @default(now())
   updatedAt         DateTime @updatedAt
 
-  @@unique([examDate, shift, subjectCombination, subject])
-  @@index([examDate, shift, subjectCombination])
+  @@index([examName, examYear, examDate, shiftName])
   @@index([isApproved])
   @@map("answer_keys")
 }
 
 model MarkingScheme {
   id                String @id @default(cuid())
-  examDate          String
-  shift             String
-  subjectCombination String
-  subject           String
-  correctMarks      Int    @default(5)
+  examName          String @db.VarChar(100)
+  examYear          String @db.VarChar(10)
+  examDate          DateTime
+  shiftName         String @db.VarChar(100)
+  subjectCombination String? @db.VarChar(100)
+  subject           String @db.VarChar(100)
+  correctMarks      Int    @default(4)
   incorrectMarks    Int    @default(-1)
   unattemptedMarks  Int    @default(0)
   totalQuestions    Int    @default(50)
-  totalMarks        Int    @default(250)
+  totalMarks        Int    @default(200)
 
-  @@unique([examDate, shift, subjectCombination, subject])
-  @@index([examDate, shift, subjectCombination])
+  @@index([examName, examYear, examDate, shiftName])
   @@map("marking_schemes")
 }
 
 model StudentResponse {
   id                String   @id @default(cuid())
-  examDate          String
-  shift             String
-  subjectCombination String
-  applicationNo     String?
-  candidateName     String?
-  rollNo            String?
+  examName          String   @db.VarChar(100)
+  examYear          String   @db.VarChar(10)
+  examDate          DateTime
+  shiftName         String   @db.VarChar(100)
+  subjectCombination String? @db.VarChar(100)
+  applicationNo     String?  @db.VarChar(50)
+  candidateName     String?  @db.VarChar(200)
+  rollNo            String?  @db.VarChar(50)
   responses         Json
   analysisResult    Json?
   createdAt         DateTime @default(now())
 
-  @@index([examDate, shift, subjectCombination])
+  @@index([examName, examYear, examDate, shiftName])
   @@index([createdAt])
   @@map("student_responses")
 }
 
 model PendingAnswerKey {
   id                String   @id @default(cuid())
-  examDate          String
-  shift             String
-  subjectCombination String
-  subject           String
+  examName          String   @db.VarChar(100)
+  examYear          String   @db.VarChar(10)
+  examDate          DateTime
+  shiftName         String   @db.VarChar(100)
+  subjectCombination String? @db.VarChar(100)
+  subject           String   @db.VarChar(100)
   answerKeyData     String   @db.Text
-  submittedBy       String
+  submittedBy       String   @db.VarChar(100)
   createdAt         DateTime @default(now())
 
   @@index([createdAt])

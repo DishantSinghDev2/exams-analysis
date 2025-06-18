@@ -22,8 +22,10 @@ export async function GET(request: NextRequest) {
         select: {
           id: true,
           candidateName: true,
+          examName: true,
+          examYear: true,
           examDate: true,
-          shift: true,
+          shiftName: true,
           subjectCombination: true,
           createdAt: true,
         },
