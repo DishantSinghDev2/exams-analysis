@@ -25,7 +25,7 @@ export async function POST(request: NextRequest) {
         applicationNo: parsedData.applicationNo,
         candidateName: parsedData.candidateName,
         rollNo: parsedData.rollNo,
-        responses: parsedData.responses,
+        responses: JSON.stringify(parsedData.responses),
       },
     })
 
@@ -43,7 +43,7 @@ export async function POST(request: NextRequest) {
       // Update the student response with analysis
       await prisma.studentResponse.update({
         where: { id: studentResponse.id },
-        data: { analysisResult: analysis },
+        data: { analysisResult: JSON.stringify(analysis) },
       })
 
       return NextResponse.json({

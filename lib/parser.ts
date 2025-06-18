@@ -64,7 +64,7 @@ function parseHTMLResponseSheet(content: string): ParsedData {
   const currentSection = sections[0] || "Unknown"
   const sectionIndex = 0
 
-  for (const panel of questionPanels) {
+  for (const panel of Array.from(questionPanels)) {
     const panelContent = panel[1]
 
     // Extract question information
@@ -78,7 +78,7 @@ function parseHTMLResponseSheet(content: string): ParsedData {
 
     // Extract image URL
     const imageMatch = panelContent.match(/<img[^>]+src="([^"]+)"/)
-    const imageUrl = imageMatch ? imageMatch[1] : null
+    const imageUrl = imageMatch ? imageMatch[1] : undefined
 
     // Extract option IDs to map chosen option number to option ID
     const optionIds: string[] = []
@@ -86,7 +86,7 @@ function parseHTMLResponseSheet(content: string): ParsedData {
       /<td align="right">Option (\d+) ID :<\/td>\s*<td class="bold">(\d+)<\/td>/g,
     )
 
-    for (const optionMatch of optionMatches) {
+    for (const optionMatch of Array.from(optionMatches)) {
       const optionNumber = Number.parseInt(optionMatch[1])
       const optionId = optionMatch[2]
       optionIds[optionNumber - 1] = optionId // Convert to 0-based index

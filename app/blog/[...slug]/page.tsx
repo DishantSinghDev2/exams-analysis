@@ -8,6 +8,7 @@ import path from "path"
 import matter from "gray-matter"
 import { remark } from "remark"
 import html from "remark-html"
+import MarkdownRenderer from "@/components/md-renderer"
 
 interface BlogPostProps {
   params: {
@@ -80,7 +81,7 @@ export default async function BlogPost({ params }: BlogPostProps) {
           {post.frontmatter.description && <p className="text-lg text-gray-600 mb-8">{post.frontmatter.description}</p>}
         </div>
 
-        <article className="prose prose-lg max-w-none" dangerouslySetInnerHTML={{ __html: post.content }} />
+        <MarkdownRenderer content={post.content} />
       </div>
     </div>
   )
