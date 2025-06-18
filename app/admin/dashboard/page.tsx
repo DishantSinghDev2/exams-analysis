@@ -11,7 +11,8 @@ import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Badge } from "@/components/ui/badge"
-import { LogOut, Upload, Check, X, Eye, BarChart3, Clock, Users } from "lucide-react"
+import { Switch } from "@/components/ui/switch"
+import { LogOut, Upload, Check, X, Eye, BarChart3, Clock, Calendar, Plus, Trash2 } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
 
 interface PendingAnswerKey {
@@ -22,6 +23,16 @@ interface PendingAnswerKey {
   subject: string
   answerKeyData: string
   submittedBy: string
+  createdAt: string
+}
+
+interface ExamOption {
+  id: string
+  examDate: string
+  shift: string
+  subjectCombination: string
+  examName: string
+  isActive: boolean
   createdAt: string
 }
 
@@ -45,6 +56,7 @@ export default function AdminDashboard() {
   const { toast } = useToast()
 
   const [pendingKeys, setPendingKeys] = useState<PendingAnswerKey[]>([])
+  const [examOptions, setExamOptions] = useState<ExamOption[]>([])
   const [isLoading, setIsLoading] = useState(false)
   const [stats, setStats] = useState<AdminStats | null>(null)
 
@@ -54,14 +66,21 @@ export default function AdminDashboard() {
   const [subjectCombination, setSubjectCombination] = useState("")
   const [answerKeyData, setAnswerKeyData] = useState("")
 
+  // Form states for exam options
+  const [newExamDate, setNewExamDate] = useState("")
+  const [newShift, setNewShift] = useState("")
+  const [newSubjectCombination, setNewSubjectCombination] = useState("")
+  const [newExamName, setNewExamName] = useState("")
+
   useEffect(() => {
     if (status === "loading") return
     if (!session) {
-      router.push("/admin/login")
+      router.push("/login")
       return
     }
     fetchPendingKeys()
     fetchStats()
+    fetchExamOptions()
   }, [session, status, router])
 
   const fetchStats = async () => {
@@ -85,6 +104,18 @@ export default function AdminDashboard() {
       }
     } catch (error) {
       console.error("Failed to fetch pending keys:", error)
+    }
+  }
+
+  const fetchExamOptions = async () => {
+    try {
+      const response = await fetch("/api/admin/exam-options")
+      const data = await response.json()
+      if (data.success) {
+        setExamOptions(data.examOptions)
+      }
+    } catch (error) {
+      console.error("Failed to fetch exam options:", error)
     }
   }
 
@@ -132,6 +163,107 @@ export default function AdminDashboard() {
       })
     } finally {
       setIsLoading(false)
+    }
+  }
+
+  const handleCreateExamOption = async () => {
+    if (!newExamDate || !newShift || !newSubjectCombination || !newExamName) {
+      toast({
+        title: "Missing Information",
+        description: "Please fill in all required fields",
+        variant: "destructive",
+      })
+      return
+    }
+
+    try {
+      const response = await fetch("/api/admin/exam-options", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          examDate: newExamDate,
+          shift: newShift,
+          subjectCombination: newSubjectCombination,
+          examName: newExamName,
+        }),
+      })
+
+      const data = await response.json()
+      if (data.success) {
+        toast({
+          title: "Success",
+          description: "Exam option created successfully",
+        })
+        setNewExamDate("")
+        setNewShift("")
+        setNewSubjectCombination("")
+        setNewExamName("")
+        fetchExamOptions()
+      } else {
+        throw new Error(data.error)
+      }
+    } catch (error) {
+      toast({
+        title: "Creation Failed",
+        description: error instanceof Error ? error.message : "Unknown error occurred",
+        variant: "destructive",
+      })
+    }
+  }
+
+  const handleToggleExamOption = async (id: string, isActive: boolean) => {
+    try {
+      const response = await fetch(`/api/admin/exam-options/${id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ isActive }),
+      })
+
+      const data = await response.json()
+      if (data.success) {
+        toast({
+          title: "Success",
+          description: `Exam option ${isActive ? "activated" : "deactivated"} successfully`,
+        })
+        fetchExamOptions()
+      } else {
+        throw new Error(data.error)
+      }
+    } catch (error) {
+      toast({
+        title: "Update Failed",
+        description: error instanceof Error ? error.message : "Unknown error occurred",
+        variant: "destructive",
+      })
+    }
+  }
+
+  const handleDeleteExamOption = async (id: string) => {
+    if (!confirm("Are you sure you want to delete this exam option?")) {
+      return
+    }
+
+    try {
+      const response = await fetch(`/api/admin/exam-options/${id}`, {
+        method: "DELETE",
+      })
+
+      const data = await response.json()
+      if (data.success) {
+        toast({
+          title: "Success",
+          description: "Exam option deleted successfully",
+        })
+        fetchExamOptions()
+      } else {
+        throw new Error(data.error)
+      }
+    } catch (error) {
+      toast({
+        title: "Delete Failed",
+        description: error instanceof Error ? error.message : "Unknown error occurred",
+        variant: "destructive",
+      })
     }
   }
 
@@ -259,11 +391,11 @@ export default function AdminDashboard() {
               <CardContent className="p-6">
                 <div className="flex items-center">
                   <div className="p-2 bg-purple-100 rounded-lg">
-                    <Users className="h-6 w-6 text-purple-600" />
+                    <Calendar className="h-6 w-6 text-purple-600" />
                   </div>
                   <div className="ml-4">
-                    <p className="text-sm font-medium text-gray-600">Recent Activity</p>
-                    <p className="text-2xl font-bold text-gray-900">{stats.recentResponses.length}</p>
+                    <p className="text-sm font-medium text-gray-600">Exam Options</p>
+                    <p className="text-2xl font-bold text-gray-900">{examOptions.length}</p>
                   </div>
                 </div>
               </CardContent>
@@ -271,8 +403,9 @@ export default function AdminDashboard() {
           </div>
         )}
 
-        <Tabs defaultValue="upload" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-2">
+        <Tabs defaultValue="exam-options" className="space-y-6">
+          <TabsList className="grid w-full grid-cols-3">
+            <TabsTrigger value="exam-options">Exam Options</TabsTrigger>
             <TabsTrigger value="upload">Upload Answer Key</TabsTrigger>
             <TabsTrigger value="pending" className="relative">
               Pending Approvals
@@ -281,6 +414,106 @@ export default function AdminDashboard() {
               )}
             </TabsTrigger>
           </TabsList>
+
+          <TabsContent value="exam-options">
+            <div className="space-y-6">
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Plus className="h-5 w-5" />
+                    Add New Exam Option
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <Label htmlFor="newExamName">Exam Name</Label>
+                      <Input
+                        id="newExamName"
+                        placeholder="e.g., NEET 2025"
+                        value={newExamName}
+                        onChange={(e) => setNewExamName(e.target.value)}
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="newExamDate">Exam Date</Label>
+                      <Input
+                        id="newExamDate"
+                        placeholder="e.g., 03/06/2025"
+                        value={newExamDate}
+                        onChange={(e) => setNewExamDate(e.target.value)}
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="newShift">Shift</Label>
+                      <Input
+                        id="newShift"
+                        placeholder="e.g., 03 June Shift 2"
+                        value={newShift}
+                        onChange={(e) => setNewShift(e.target.value)}
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="newSubjectCombination">Subject Combination</Label>
+                      <Select value={newSubjectCombination} onValueChange={setNewSubjectCombination}>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select combination" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="Combination 1">Combination 1</SelectItem>
+                          <SelectItem value="Combination 2">Combination 2</SelectItem>
+                          <SelectItem value="Combination 3">Combination 3</SelectItem>
+                          <SelectItem value="Combination 4">Combination 4</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
+                  <Button onClick={handleCreateExamOption} className="w-full">
+                    Add Exam Option
+                  </Button>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader>
+                  <CardTitle>Existing Exam Options</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-4">
+                    {examOptions.length === 0 ? (
+                      <p className="text-center text-gray-500 py-8">No exam options available</p>
+                    ) : (
+                      examOptions.map((option) => (
+                        <div key={option.id} className="flex items-center justify-between p-4 border rounded-lg">
+                          <div>
+                            <h4 className="font-medium">{option.examName}</h4>
+                            <p className="text-sm text-gray-600">
+                              {option.examDate} | {option.shift} | {option.subjectCombination}
+                            </p>
+                            <p className="text-xs text-gray-500">
+                              Created: {new Date(option.createdAt).toLocaleDateString()}
+                            </p>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <div className="flex items-center space-x-2">
+                              <Switch
+                                checked={option.isActive}
+                                onCheckedChange={(checked) => handleToggleExamOption(option.id, checked)}
+                              />
+                              <span className="text-sm">{option.isActive ? "Active" : "Inactive"}</span>
+                            </div>
+                            <Button size="sm" variant="destructive" onClick={() => handleDeleteExamOption(option.id)}>
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
+                          </div>
+                        </div>
+                      ))
+                    )}
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+          </TabsContent>
 
           <TabsContent value="upload">
             <Card>

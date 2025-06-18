@@ -20,6 +20,22 @@ model Admin {
   @@map("admins")
 }
 
+model ExamOption {
+  id                String   @id @default(cuid())
+  examDate          String
+  shift             String
+  subjectCombination String
+  examName          String   // e.g., "NEET 2025", "JEE Mains 2025"
+  isActive          Boolean  @default(true)
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  @@unique([examDate, shift, subjectCombination])
+  @@index([isActive])
+  @@index([examDate])
+  @@map("exam_options")
+}
+
 model AnswerKey {
   id                String   @id @default(cuid())
   examDate          String

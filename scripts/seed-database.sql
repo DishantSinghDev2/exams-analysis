@@ -2,11 +2,31 @@
 
 -- Insert sample admin users (replace with actual emails)
 INSERT INTO admins (id, email, githubId, name, createdAt, updatedAt) VALUES
-('admin1', 'admin@example.com', '12345', 'Admin User', NOW(), NOW()),
-('admin2', 'admin2@example.com', '12346', 'Admin User 2', NOW(), NOW())
+('admin1', 'shahdilipkumar909@gmail.com', '12345', 'Dishant Singh', NOW(), NOW())
 ON DUPLICATE KEY UPDATE updatedAt = NOW();
 
--- Insert sample marking schemes for different exams
+-- Insert sample exam options
+INSERT INTO exam_options (id, examDate, shift, subjectCombination, examName, isActive, createdAt, updatedAt) VALUES
+-- NEET 2025
+('eo1', '03/06/2025', '03 June Shift 1', 'Combination 1', 'NEET 2025', true, NOW(), NOW()),
+('eo2', '03/06/2025', '03 June Shift 1', 'Combination 2', 'NEET 2025', true, NOW(), NOW()),
+('eo3', '03/06/2025', '03 June Shift 2', 'Combination 1', 'NEET 2025', true, NOW(), NOW()),
+('eo4', '03/06/2025', '03 June Shift 2', 'Combination 2', 'NEET 2025', true, NOW(), NOW()),
+
+-- JEE Mains 2025
+('eo5', '01/06/2025', '01 June Shift 1', 'Combination 1', 'JEE Mains 2025', true, NOW(), NOW()),
+('eo6', '01/06/2025', '01 June Shift 2', 'Combination 1', 'JEE Mains 2025', true, NOW(), NOW()),
+('eo7', '02/06/2025', '02 June Shift 1', 'Combination 1', 'JEE Mains 2025', true, NOW(), NOW()),
+('eo8', '02/06/2025', '02 June Shift 2', 'Combination 1', 'JEE Mains 2025', true, NOW(), NOW()),
+
+-- CUET 2025
+('eo9', '15/05/2025', '15 May Shift 1', 'Combination 1', 'CUET 2025', true, NOW(), NOW()),
+('eo10', '15/05/2025', '15 May Shift 1', 'Combination 2', 'CUET 2025', true, NOW(), NOW()),
+('eo11', '15/05/2025', '15 May Shift 2', 'Combination 1', 'CUET 2025', true, NOW(), NOW()),
+('eo12', '15/05/2025', '15 May Shift 2', 'Combination 2', 'CUET 2025', true, NOW(), NOW())
+ON DUPLICATE KEY UPDATE updatedAt = NOW();
+
+-- Insert sample marking schemes
 INSERT INTO marking_schemes (id, examDate, shift, subjectCombination, subject, correctMarks, incorrectMarks, unattemptedMarks, totalQuestions, totalMarks) VALUES
 -- NEET 2025
 ('ms1', '03/06/2025', '03 June Shift 1', 'Combination 1', 'Biology', 4, -1, 0, 50, 200),
@@ -22,9 +42,14 @@ INSERT INTO marking_schemes (id, examDate, shift, subjectCombination, subject, c
 ('ms9', '01/06/2025', '01 June Shift 1', 'Combination 1', 'Chemistry', 4, -1, 0, 30, 120),
 
 -- CUET 2025
-('ms10', '03/06/2025', '03 June Shift 2', 'Combination 2', 'Biology', 5, -1, 0, 50, 250),
-('ms11', '03/06/2025', '03 June Shift 2', 'Combination 2', 'Chemistry', 5, -1, 0, 50, 250),
-('ms12', '03/06/2025', '03 June Shift 2', 'Combination 2', 'Physics', 5, -1, 0, 50, 250)
+('ms10', '15/05/2025', '15 May Shift 1', 'Combination 1', 'Biology', 5, -1, 0, 50, 250),
+('ms11', '15/05/2025', '15 May Shift 1', 'Combination 1', 'Chemistry', 5, -1, 0, 50, 250),
+('ms12', '15/05/2025', '15 May Shift 1', 'Combination 2', 'Biology', 5, -1, 0, 50, 250),
+('ms13', '15/05/2025', '15 May Shift 1', 'Combination 2', 'Chemistry', 5, -1, 0, 50, 250),
+('ms14', '15/05/2025', '15 May Shift 2', 'Combination 1', 'Biology', 5, -1, 0, 50, 250),
+('ms15', '15/05/2025', '15 May Shift 2', 'Combination 1', 'Chemistry', 5, -1, 0, 50, 250),
+('ms16', '15/05/2025', '15 May Shift 2', 'Combination 2', 'Biology', 5, -1, 0, 50, 250),
+('ms17', '15/05/2025', '15 May Shift 2', 'Combination 2', 'Chemistry', 5, -1, 0, 50, 250)
 ON DUPLICATE KEY UPDATE updatedAt = NOW();
 
 -- Insert sample answer keys

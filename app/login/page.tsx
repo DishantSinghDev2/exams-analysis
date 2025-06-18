@@ -1,19 +1,21 @@
 "use client"
 
-import { signIn, getSession } from "next-auth/react"
+import { signIn, useSession } from "next-auth/react"
 import { useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Github } from "lucide-react"
+import { useToast } from "@/hooks/use-toast"
 
 export default function AdminLogin() {
   const [isLoading, setIsLoading] = useState(false)
   const router = useRouter()
+  const { data: session } = useSession()
+  const {toast} = useToast()
 
   useEffect(() => {
     const checkSession = async () => {
-      const session = await getSession()
       if (session) {
         router.push("/admin/dashboard")
       }
@@ -24,13 +26,21 @@ export default function AdminLogin() {
   const handleGitHubLogin = async () => {
     setIsLoading(true)
     try {
-      await signIn("github", { callbackUrl: "/admin/dashboard" })
+      const result = await signIn("github", { callbackUrl: "/admin/dashboard", redirect: false })
+      if (result?.error) {
+        toast({
+          title: "Login Failed",
+          description: `${result.error}`,
+          variant: "destructive",
+        })
+      }
     } catch (error) {
       console.error("Login error:", error)
     } finally {
       setIsLoading(false)
     }
   }
+  
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-100">

@@ -5,9 +5,11 @@ import { usePathname } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { BookOpen, BarChart3, Settings } from "lucide-react"
 import { MobileNavigation } from "./mobile-navigation"
+import { useSession } from "next-auth/react"
 
 export function Navigation() {
   const pathname = usePathname()
+  const session = useSession()
 
   const navItems = [
     { href: "/", label: "Analyzer", icon: BarChart3 },
@@ -39,12 +41,12 @@ export function Navigation() {
               )
             })}
 
-            <Link href="/admin/dashboard">
+            {session.data && <Link href="/admin/dashboard">
               <Button variant="outline" size="sm" className="flex items-center space-x-2">
                 <Settings className="h-4 w-4" />
                 <span>Admin</span>
               </Button>
-            </Link>
+            </Link>}
           </div>
 
           {/* Mobile Navigation */}

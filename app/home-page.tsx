@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
@@ -8,29 +8,85 @@ import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Upload, Link, FileText, BarChart3 } from "lucide-react"
+import { Upload, Link, FileText, BarChart3, Calendar, Clock, BookOpen } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
 import { parsePDFResponse } from "@/lib/pdf-parser"
 import type { AnalysisResult } from "@/types"
 
+interface ExamOption {
+  examDate: string
+  examName: string
+  shifts: Array<{
+    shift: string
+    subjectCombinations: string[]
+  }>
+}
+
 export default function HomePage() {
-  const [examDate, setExamDate] = useState("")
-  const [shift, setShift] = useState("")
-  const [subjectCombination, setSubjectCombination] = useState("")
+  const [examOptions, setExamOptions] = useState<ExamOption[]>([])
+  const [selectedExamDate, setSelectedExamDate] = useState("")
+  const [selectedShift, setSelectedShift] = useState("")
+  const [selectedSubjectCombination, setSelectedSubjectCombination] = useState("")
   const [responseInput, setResponseInput] = useState("")
   const [inputType, setInputType] = useState<"url" | "paste" | "file">("url")
   const [isLoading, setIsLoading] = useState(false)
+  const [isLoadingOptions, setIsLoadingOptions] = useState(true)
   const [analysisResult, setAnalysisResult] = useState<AnalysisResult | null>(null)
   const [showAnswerKeyForm, setShowAnswerKeyForm] = useState(false)
   const [answerKeyInput, setAnswerKeyInput] = useState("")
   const { toast } = useToast()
   const [selectedFile, setSelectedFile] = useState<File | null>(null)
 
+  // Get available shifts for selected exam date
+  const availableShifts = selectedExamDate
+    ? examOptions.find((option) => option.examDate === selectedExamDate)?.shifts || []
+    : []
+
+  // Get available subject combinations for selected shift
+  const availableSubjectCombinations = selectedShift
+    ? availableShifts.find((shift) => shift.shift === selectedShift)?.subjectCombinations || []
+    : []
+
+  useEffect(() => {
+    fetchExamOptions()
+  }, [])
+
+  // Reset dependent selections when parent selection changes
+  useEffect(() => {
+    setSelectedShift("")
+    setSelectedSubjectCombination("")
+  }, [selectedExamDate])
+
+  useEffect(() => {
+    setSelectedSubjectCombination("")
+  }, [selectedShift])
+
+  const fetchExamOptions = async () => {
+    try {
+      const response = await fetch("/api/exam-options")
+      const data = await response.json()
+
+      if (data.success) {
+        setExamOptions(data.examOptions)
+      } else {
+        throw new Error(data.error)
+      }
+    } catch (error) {
+      toast({
+        title: "Failed to Load Options",
+        description: "Could not fetch available exam options",
+        variant: "destructive",
+      })
+    } finally {
+      setIsLoadingOptions(false)
+    }
+  }
+
   const handleAnalyze = async () => {
-    if (!examDate || !shift || !subjectCombination) {
+    if (!selectedExamDate || !selectedShift || !selectedSubjectCombination) {
       toast({
         title: "Missing Information",
-        description: "Please fill in all required fields",
+        description: "Please select exam date, shift, and subject combination",
         variant: "destructive",
       })
       return
@@ -67,9 +123,9 @@ export default function HomePage() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          examDate,
-          shift,
-          subjectCombination,
+          examDate: selectedExamDate,
+          shift: selectedShift,
+          subjectCombination: selectedSubjectCombination,
           responseInput: finalInput,
         }),
       })
@@ -116,9 +172,9 @@ export default function HomePage() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          examDate,
-          shift,
-          subjectCombination,
+          examDate: selectedExamDate,
+          shift: selectedShift,
+          subjectCombination: selectedSubjectCombination,
           answerKeyData: answerKeyInput,
         }),
       })
@@ -145,6 +201,42 @@ export default function HomePage() {
     }
   }
 
+  if (isLoadingOptions) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100">
+        <Card className="w-full max-w-md">
+          <CardContent className="flex items-center justify-center p-8">
+            <div className="text-center">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
+              <p className="text-gray-600">Loading exam options...</p>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    )
+  }
+
+  if (examOptions.length === 0) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100 p-4">
+        <Card className="w-full max-w-md">
+          <CardHeader className="text-center">
+            <BookOpen className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+            <CardTitle className="text-xl text-gray-800">No Exams Available</CardTitle>
+          </CardHeader>
+          <CardContent className="text-center">
+            <p className="text-gray-600 mb-4">
+              No exam options are currently available. Please check back later or contact the administrator.
+            </p>
+            <Button onClick={fetchExamOptions} variant="outline">
+              Refresh
+            </Button>
+          </CardContent>
+        </Card>
+      </div>
+    )
+  }
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 p-4">
       <div className="max-w-6xl mx-auto">
@@ -164,34 +256,59 @@ export default function HomePage() {
             <CardContent className="space-y-6">
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div>
-                  <Label htmlFor="examDate">Exam Date</Label>
-                  <Input
-                    id="examDate"
-                    placeholder="e.g., 03/06/2025"
-                    value={examDate}
-                    onChange={(e) => setExamDate(e.target.value)}
-                  />
-                </div>
-                <div>
-                  <Label htmlFor="shift">Shift</Label>
-                  <Input
-                    id="shift"
-                    placeholder="e.g., 03 June Shift 2"
-                    value={shift}
-                    onChange={(e) => setShift(e.target.value)}
-                  />
-                </div>
-                <div>
-                  <Label htmlFor="subjectCombination">Subject Combination</Label>
-                  <Select value={subjectCombination} onValueChange={setSubjectCombination}>
+                  <Label htmlFor="examDate" className="flex items-center gap-2">
+                    <Calendar className="h-4 w-4" />
+                    Exam Date
+                  </Label>
+                  <Select value={selectedExamDate} onValueChange={setSelectedExamDate}>
                     <SelectTrigger>
-                      <SelectValue placeholder="Select combination" />
+                      <SelectValue placeholder="Select exam date" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="Combination 1">Combination 1</SelectItem>
-                      <SelectItem value="Combination 2">Combination 2</SelectItem>
-                      <SelectItem value="Combination 3">Combination 3</SelectItem>
-                      <SelectItem value="Combination 4">Combination 4</SelectItem>
+                      {examOptions.map((option) => (
+                        <SelectItem key={option.examDate} value={option.examDate}>
+                          {option.examName} - {option.examDate}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div>
+                  <Label htmlFor="shift" className="flex items-center gap-2">
+                    <Clock className="h-4 w-4" />
+                    Shift
+                  </Label>
+                  <Select value={selectedShift} onValueChange={setSelectedShift} disabled={!selectedExamDate}>
+                    <SelectTrigger>
+                      <SelectValue placeholder={selectedExamDate ? "Select shift" : "Select exam date first"} />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {availableShifts.map((shift) => (
+                        <SelectItem key={shift.shift} value={shift.shift}>
+                          {shift.shift}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div>
+                  <Label htmlFor="subjectCombination">Subject Combination</Label>
+                  <Select
+                    value={selectedSubjectCombination}
+                    onValueChange={setSelectedSubjectCombination}
+                    disabled={!selectedShift}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder={selectedShift ? "Select combination" : "Select shift first"} />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {availableSubjectCombinations.map((combination) => (
+                        <SelectItem key={combination} value={combination}>
+                          {combination}
+                        </SelectItem>
+                      ))}
                     </SelectContent>
                   </Select>
                 </div>
@@ -260,6 +377,20 @@ export default function HomePage() {
               <CardTitle>Submit Answer Key for Approval</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
+              <div className="bg-blue-50 p-4 rounded-lg">
+                <h4 className="font-medium text-blue-800 mb-2">Selected Exam Details:</h4>
+                <div className="text-sm text-blue-700">
+                  <p>
+                    <strong>Date:</strong> {selectedExamDate}
+                  </p>
+                  <p>
+                    <strong>Shift:</strong> {selectedShift}
+                  </p>
+                  <p>
+                    <strong>Subject Combination:</strong> {selectedSubjectCombination}
+                  </p>
+                </div>
+              </div>
               <div>
                 <Label htmlFor="answerKey">Answer Key Data</Label>
                 <Textarea
@@ -401,9 +532,9 @@ export default function HomePage() {
               <Button
                 onClick={() => {
                   setAnalysisResult(null)
-                  setExamDate("")
-                  setShift("")
-                  setSubjectCombination("")
+                  setSelectedExamDate("")
+                  setSelectedShift("")
+                  setSelectedSubjectCombination("")
                   setResponseInput("")
                 }}
                 variant="outline"

@@ -17,6 +17,8 @@ export const authOptions: NextAuthOptions = {
           where: { email: user.email },
         })
 
+        console.log("Admin check for user:", user.email, "Found:", admin)
+
         if (!admin) {
           return false // Deny access
         }
@@ -54,7 +56,7 @@ export const authOptions: NextAuthOptions = {
     },
   },
   pages: {
-    signIn: "/admin/login",
-    error: "/admin/login",
+    signIn: "/login",
+    error: undefined, // Prevent redirects on error
   },
 }

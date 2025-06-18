@@ -14,32 +14,32 @@ A comprehensive web application for analyzing exam response sheets with subject-
 
 ### 1. Clone and Install
 
-\`\`\`bash
+```bash
 git clone <repository-url>
 cd exam-response-analyzer
 npm install
-\`\`\`
+```
 
 ### 2. Database Setup
 
-\`\`\`bash
+```bash
 # Create MySQL database
 mysql -u root -p < scripts/init-database.sql
 
 # Configure environment variables
 cp .env.example .env
 # Edit .env with your database credentials
-\`\`\`
+```
 
 ### 3. Prisma Setup
 
-\`\`\`bash
+```bash
 # Generate Prisma client
 npm run db:generate
 
 # Push schema to database
 npm run db:push
-\`\`\`
+```
 
 ### 4. GitHub OAuth Setup
 
@@ -54,9 +54,9 @@ Update the `scripts/init-database.sql` file with your GitHub email address to gr
 
 ### 6. Run the Application
 
-\`\`\`bash
+```bash
 npm run dev
-\`\`\`
+```
 
 Visit `http://localhost:3000` to access the application.
 
@@ -98,13 +98,13 @@ Visit `http://localhost:3000` to access the application.
 
 ## Environment Variables
 
-\`\`\`env
+```env
 DATABASE_URL="mysql://username:password@host:port/database"
 NEXTAUTH_URL="https://your-domain.com"
 NEXTAUTH_SECRET="your-secret-key"
 GITHUB_CLIENT_ID="your-github-client-id"
 GITHUB_CLIENT_SECRET="your-github-client-secret"
-\`\`\`
+```
 
 ## API Endpoints
 
@@ -136,17 +136,17 @@ MIT License
 - [ ] Test all functionality locally
 
 ### Environment Variables
-\`\`\`env
+```env
 # Required for production
 DATABASE_URL="mysql://username:password@host:port/database"
 NEXTAUTH_URL="https://your-domain.com"
 NEXTAUTH_SECRET="your-secret-key-min-32-chars"
 GITHUB_CLIENT_ID="your-github-client-id"
 GITHUB_CLIENT_SECRET="your-github-client-secret"
-\`\`\`
+```
 
 ### Database Setup
-\`\`\`bash
+```bash
 # Initialize database
 npm run db:push
 
@@ -155,7 +155,7 @@ npm run db:seed
 
 # Reset database (development only)
 npm run db:reset
-\`\`\`
+```
 
 ### Features Implemented
 
