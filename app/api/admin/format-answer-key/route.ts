@@ -13,8 +13,16 @@ export async function POST(request: NextRequest) {
 
     const { rawAnswerKey } = await request.json()
 
-    if (!rawAnswerKey || rawAnswerKey.trim().length === 0) {
-      return NextResponse.json({ success: false, error: "No answer key data provided" }, { status: 400 })
+    if (!rawAnswerKey || typeof rawAnswerKey !== "string" || !rawAnswerKey.trim()) {
+      return NextResponse.json({ success: false, error: "Raw answer key data is required" }, { status: 400 })
+    }
+
+    // Check if Gemini API key is configured
+    if (!process.env.GEMINI_API_KEY) {
+      return NextResponse.json(
+        { success: false, error: "AI formatting is not configured. Please set GEMINI_API_KEY." },
+        { status: 500 },
+      )
     }
 
     const result = await formatAnswerKeyWithAI(rawAnswerKey)
@@ -25,8 +33,8 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({
       success: true,
-      formattedData: result.formattedData,
-      message: `Successfully formatted ${result.formattedData?.length} answer entries`,
+      message: `Successfully formatted ${result.data?.length || 0} answer entries`,
+      formattedData: result.data,
     })
   } catch (error) {
     console.error("Format answer key error:", error)

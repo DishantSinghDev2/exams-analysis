@@ -9,10 +9,11 @@ import { Textarea } from "@/components/ui/textarea"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Badge } from "@/components/ui/badge"
-import { Upload, Link, FileText, BarChart3, Calendar, Clock, BookOpen, GraduationCap } from "lucide-react"
+import { Upload, Link, FileText, Calendar, Clock, BookOpen, GraduationCap } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
 import { parsePDFResponse } from "@/lib/pdf-parser"
 import type { AnalysisResult } from "@/types"
+import AnalysisResults from "@/components/analysis-results"
 
 interface ExamData {
   id: string
@@ -561,133 +562,18 @@ export default function HomePage() {
         )}
 
         {analysisResult && (
-          <div className="space-y-6">
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <BarChart3 className="h-5 w-5" />
-                  Analysis Results
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-                  <div className="text-center p-4 bg-blue-50 rounded-lg">
-                    <div className="text-3xl font-bold text-blue-600">{analysisResult.totalScore}</div>
-                    <div className="text-sm text-gray-600">Total Score (out of {analysisResult.maxTotalScore})</div>
-                  </div>
-                  <div className="text-center p-4 bg-green-50 rounded-lg">
-                    <div className="text-3xl font-bold text-green-600">
-                      {((analysisResult.totalScore / analysisResult.maxTotalScore) * 100).toFixed(1)}%
-                    </div>
-                    <div className="text-sm text-gray-600">Percentage Score</div>
-                  </div>
-                </div>
-
-                <div className="space-y-4">
-                  <h3 className="text-lg font-semibold">Subject-wise Performance</h3>
-                  {Object.entries(analysisResult.subjectWiseScores).map(([subject, scores]) => (
-                    <div key={subject} className="border rounded-lg p-4">
-                      <div className="flex justify-between items-center mb-2">
-                        <h4 className="font-medium">{subject}</h4>
-                        <span className="text-lg font-bold">
-                          {scores.score}/{scores.maxScore}
-                        </span>
-                      </div>
-                      <div className="grid grid-cols-3 gap-4 text-sm">
-                        <div className="text-center p-2 bg-green-50 rounded">
-                          <div className="font-bold text-green-600">{scores.correct}</div>
-                          <div className="text-gray-600">Correct</div>
-                        </div>
-                        <div className="text-center p-2 bg-red-50 rounded">
-                          <div className="font-bold text-red-600">{scores.incorrect}</div>
-                          <div className="text-gray-600">Incorrect</div>
-                        </div>
-                        <div className="text-center p-2 bg-gray-50 rounded">
-                          <div className="font-bold text-gray-600">{scores.unattempted}</div>
-                          <div className="text-gray-600">Unattempted</div>
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader>
-                <CardTitle>Detailed Question Analysis</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="overflow-x-auto">
-                  <table className="w-full border-collapse border border-gray-300">
-                    <thead>
-                      <tr className="bg-gray-50">
-                        <th className="border border-gray-300 p-2 text-left">Question ID</th>
-                        <th className="border border-gray-300 p-2 text-left">Subject</th>
-                        <th className="border border-gray-300 p-2 text-left">Your Answer</th>
-                        <th className="border border-gray-300 p-2 text-left">Correct Answer</th>
-                        <th className="border border-gray-300 p-2 text-left">Status</th>
-                        <th className="border border-gray-300 p-2 text-left">Marks</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {analysisResult.detailedComparison.map((item, index) => (
-                        <tr
-                          key={index}
-                          className={
-                            item.status === "Correct"
-                              ? "bg-green-50"
-                              : item.status === "Incorrect"
-                                ? "bg-red-50"
-                                : "bg-gray-50"
-                          }
-                        >
-                          <td className="border border-gray-300 p-2">{item.questionId}</td>
-                          <td className="border border-gray-300 p-2">{item.subject}</td>
-                          <td className="border border-gray-300 p-2">{item.studentAnswer}</td>
-                          <td className="border border-gray-300 p-2">{item.correctAnswer.join(", ")}</td>
-                          <td className="border border-gray-300 p-2">
-                            <span
-                              className={`px-2 py-1 rounded text-xs font-medium ${
-                                item.status === "Correct"
-                                  ? "bg-green-100 text-green-800"
-                                  : item.status === "Incorrect"
-                                    ? "bg-red-100 text-red-800"
-                                    : "bg-gray-100 text-gray-800"
-                              }`}
-                            >
-                              {item.status === "Correct" ? "✅" : item.status === "Incorrect" ? "❌" : "⚪"}{" "}
-                              {item.status}
-                            </span>
-                          </td>
-                          <td className="border border-gray-300 p-2 font-medium">
-                            {item.marksAwarded > 0 ? "+" : ""}
-                            {item.marksAwarded}
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              </CardContent>
-            </Card>
-
-            <div className="text-center">
-              <Button
-                onClick={() => {
-                  setAnalysisResult(null)
-                  setSelectedExam(null)
-                  setSelectedDate("")
-                  setSelectedShift("")
-                  setSelectedCombination("")
-                  setResponseInput("")
-                }}
-                variant="outline"
-              >
-                Analyze Another Response Sheet
-              </Button>
-            </div>
-          </div>
+          <AnalysisResults
+            result={analysisResult}
+            onReset={() => {
+              setAnalysisResult(null)
+              setSelectedExam(null)
+              setSelectedDate("")
+              setSelectedShift("")
+              setSelectedCombination("")
+              setResponseInput("")
+              setSelectedFile(null)
+            }}
+          />
         )}
       </div>
     </div>

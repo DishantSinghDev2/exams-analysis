@@ -99,6 +99,7 @@ model AnswerKey {
   createdAt         DateTime @default(now())
   updatedAt         DateTime @updatedAt
 
+  @@unique([examName, examYear, examDate, shiftName, subjectCombination, subject])
   @@index([examName, examYear, examDate, shiftName])
   @@index([isApproved])
   @@map("answer_keys")
@@ -118,6 +119,7 @@ model MarkingScheme {
   totalQuestions    Int    @default(50)
   totalMarks        Int    @default(200)
 
+  @@unique([examName, examYear, examDate, shiftName, subjectCombination, subject])
   @@index([examName, examYear, examDate, shiftName])
   @@map("marking_schemes")
 }

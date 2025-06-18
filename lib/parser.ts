@@ -28,7 +28,106 @@ export async function parseResponseSheet(input: string): Promise<ParsedData> {
     }
   }
 
-  // Parse HTML content
+  // Check if it's HTML content
+  if (content.includes("<body") || content.includes("<table")) {
+    return parseHTMLResponseSheet(content)
+  } else {
+    return parseTextResponseSheet(content)
+  }
+}
+
+function parseHTMLResponseSheet(content: string): ParsedData {
+  // Extract basic information from the HTML table
+  const applicationNoMatch = content.match(/<td>Application No<\/td>\s*<td>(\d+)<\/td>/)
+  const candidateNameMatch = content.match(/<td>Candidate Name<\/td>\s*<td>([^<]+)<\/td>/)
+  const rollNoMatch = content.match(/<td>Roll No\.<\/td>\s*<td>([^<]+)<\/td>/)
+  const testDateMatch = content.match(/<td>Test Date<\/td>\s*<td>([^<]+)<\/td>/)
+  const testTimeMatch = content.match(/<td>Test Time<\/td>\s*<td>([^<]+)<\/td>/)
+  const subjectMatch = content.match(/<td>Subject<\/td>\s*<td>([^<]+)<\/td>/)
+
+  if (!applicationNoMatch || !candidateNameMatch || !rollNoMatch) {
+    throw new Error("Invalid response sheet format - missing required student information")
+  }
+
+  const responses: ParsedResponse[] = []
+
+  // Extract section information
+  const sectionMatches = content.matchAll(/<span class="bold">([^<]+)<\/span><\/div>/g)
+  const sections = Array.from(sectionMatches).map((match) => match[1])
+
+  // Extract questions from each question panel
+  const questionPanels = content.matchAll(
+    /<div class="question-pnl"[^>]*>([\s\S]*?)<\/div>\s*(?=<div class="question-pnl"|<\/div>\s*<\/div>)/g,
+  )
+
+  const currentSection = sections[0] || "Unknown"
+  const sectionIndex = 0
+
+  for (const panel of questionPanels) {
+    const panelContent = panel[1]
+
+    // Extract question information
+    const questionIdMatch = panelContent.match(/<td align="right">Question ID :<\/td>\s*<td class="bold">(\d+)<\/td>/)
+    const statusMatch = panelContent.match(
+      /<td align="right">Status :<\/td>\s*<td class="bold">(Answered|Not Answered)<\/td>/,
+    )
+    const chosenOptionMatch = panelContent.match(
+      /<td align="right">Chosen Option :<\/td>\s*<td class="bold">(\d+)<\/td>/,
+    )
+
+    // Extract option IDs to map chosen option number to option ID
+    const optionIds: string[] = []
+    const optionMatches = panelContent.matchAll(
+      /<td align="right">Option (\d+) ID :<\/td>\s*<td class="bold">(\d+)<\/td>/g,
+    )
+
+    for (const optionMatch of optionMatches) {
+      const optionNumber = Number.parseInt(optionMatch[1])
+      const optionId = optionMatch[2]
+      optionIds[optionNumber - 1] = optionId // Convert to 0-based index
+    }
+
+    if (questionIdMatch && statusMatch) {
+      let chosenOptionId = ""
+
+      if (chosenOptionMatch && statusMatch[1] === "Answered") {
+        const chosenOptionNumber = Number.parseInt(chosenOptionMatch[1])
+        chosenOptionId = optionIds[chosenOptionNumber - 1] || chosenOptionMatch[1]
+      }
+
+      responses.push({
+        questionId: questionIdMatch[1],
+        chosenOption: chosenOptionId,
+        status: statusMatch[1] as "Answered" | "Not Answered",
+        subject: currentSection,
+      })
+    }
+  }
+
+  // If we have multiple sections, try to distribute questions accordingly
+  if (sections.length > 1) {
+    const questionsPerSection = Math.ceil(responses.length / sections.length)
+    responses.forEach((response, index) => {
+      const sectionIndex = Math.floor(index / questionsPerSection)
+      if (sections[sectionIndex]) {
+        response.subject = sections[sectionIndex]
+      }
+    })
+  }
+
+  return {
+    applicationNo: applicationNoMatch[1],
+    candidateName: candidateNameMatch[1].trim(),
+    rollNo: rollNoMatch[1].trim(),
+    testDate: testDateMatch?.[1]?.trim() || "",
+    testTime: testTimeMatch?.[1]?.trim() || "",
+    subject: subjectMatch?.[1]?.trim() || "",
+    responses,
+  }
+}
+
+function parseTextResponseSheet(content: string): ParsedData {
+  // Original text-based parsing logic
   const applicationNoMatch = content.match(/Application No\s*(\d+)/)
   const candidateNameMatch = content.match(/Candidate Name\s*([^\n\r]+)/)
   const rollNoMatch = content.match(/Roll No\.\s*([^\n\r]+)/)
@@ -37,7 +136,7 @@ export async function parseResponseSheet(input: string): Promise<ParsedData> {
   const subjectMatch = content.match(/Subject\s*([^\n\r]+)/)
 
   if (!applicationNoMatch || !candidateNameMatch || !rollNoMatch) {
-    throw new Error("Invalid response sheet format")
+    throw new Error("Invalid response sheet format - missing required student information")
   }
 
   const responses: ParsedResponse[] = []

@@ -33,22 +33,23 @@ export async function POST(request: NextRequest) {
         examName_examYear_examDate_shiftName_subjectCombination_subject: {
           examName,
           examYear,
-          examDate,
+          examDate: new Date(examDate),
           shiftName,
-          subjectCombination: subjectCombination || "",
+          subjectCombination: subjectCombination || null,
           subject,
         },
       },
       update: {
         answers,
         isApproved: true,
+        updatedAt: new Date(),
       },
       create: {
         examName,
         examYear,
-        examDate,
+        examDate: new Date(examDate),
         shiftName,
-        subjectCombination: subjectCombination || "",
+        subjectCombination: subjectCombination || null,
         subject,
         answers,
         isApproved: true,
@@ -56,25 +57,28 @@ export async function POST(request: NextRequest) {
       },
     })
 
-    // Create default marking scheme if not exists
+    // Create or update default marking scheme
     await prisma.markingScheme.upsert({
       where: {
         examName_examYear_examDate_shiftName_subjectCombination_subject: {
           examName,
           examYear,
-          examDate,
+          examDate: new Date(examDate),
           shiftName,
-          subjectCombination: subjectCombination || "",
+          subjectCombination: subjectCombination || null,
           subject,
         },
       },
-      update: {},
+      update: {
+        totalQuestions: answers.length,
+        totalMarks: answers.length * 4,
+      },
       create: {
         examName,
         examYear,
-        examDate,
+        examDate: new Date(examDate),
         shiftName,
-        subjectCombination: subjectCombination || "",
+        subjectCombination: subjectCombination || null,
         subject,
         correctMarks: 4,
         incorrectMarks: -1,
