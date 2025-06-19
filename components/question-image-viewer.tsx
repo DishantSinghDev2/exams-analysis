@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { ZoomIn, ZoomOut, RotateCcw, Loader } from "lucide-react";
 import Tesseract from "tesseract.js"
+import MarkdownRenderer from "./md-renderer";
 
 interface QuestionImageViewerProps {
   isOpen: boolean;
@@ -40,12 +41,9 @@ export default function QuestionImageViewer({ isOpen, onClose, questionData }: Q
     setLoadingExplanation(true);
     setExplanation(null);
     try {
-      const imageResponse = await fetch("https://cdn3.digialm.com" + questionData.imageUrl, {
-        method: "GET",
-        headers: {
-          "Cache-Control": "no-cache",
-        },
-      });
+      const proxyUrl = `/api/image-proxy?url=${encodeURIComponent(`https://cdn3.digialm.com${questionData.imageUrl}`)}`;
+      const imageResponse = await fetch(proxyUrl)
+
       if (!imageResponse.ok) {
         throw new Error(`Failed to fetch question image: ${imageResponse.statusText}`);
       }
@@ -178,7 +176,10 @@ export default function QuestionImageViewer({ isOpen, onClose, questionData }: Q
           {explanation && (
             <div className="mt-4 p-4 bg-gray-100 rounded-lg text-sm">
               <strong>Explanation:</strong>
-              <p className="mt-2">{explanation}</p>
+              <p className="mt-2">
+                <MarkdownRenderer content={explanation} />
+              
+              </p>
             </div>
           )}
         </div>

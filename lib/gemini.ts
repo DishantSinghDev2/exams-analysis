@@ -111,8 +111,8 @@ export async function explainQuestionWithAI(
 You are an expert at explaining exam questions and answers. I will provide you with a question, the student's selected answer, and the correct answer. Your task is to provide a clear and concise explanation of why the correct answer is correct and why the student's answer is incorrect.
 
 QUESTION: ${extractedText}
-STUDENT'S ANSWER: ${studentAnswer}
-CORRECT ANSWER: ${correctAnswer}
+STUDENT'S ANSWER ID: ${studentAnswer}
+CORRECT ANSWER ID: ${correctAnswer}
 SUBJECT: ${subject}
 
 
