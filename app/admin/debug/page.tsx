@@ -91,7 +91,6 @@ export default function AdminDebug() {
     }
   }
 
-  // Only show in development
   if (process.env.NODE_ENV === "production") {
     return (
       <div className="min-h-screen flex items-center justify-center">
