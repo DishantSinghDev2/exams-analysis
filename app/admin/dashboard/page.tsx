@@ -122,7 +122,6 @@ export default function AdminDashboard() {
   const [answerKeyDate, setAnswerKeyDate] = useState("")
   const [answerKeyShift, setAnswerKeyShift] = useState("")
   const [answerKeyCombination, setAnswerKeyCombination] = useState("")
-  const [answerKeyData, setAnswerKeyData] = useState("")
 
   // Form states for manual answer key entry
   const [manualExam, setManualExam] = useState("")
@@ -363,59 +362,6 @@ export default function AdminDashboard() {
         description: error instanceof Error ? error.message : "Unknown error occurred",
         variant: "destructive",
       })
-    }
-  }
-
-  const handleUploadAnswerKey = async () => {
-    if (!answerKeyExam || !answerKeyDate || !answerKeyShift || !answerKeyData) {
-      toast({
-        title: "Missing Information",
-        description: "Please fill in all required fields",
-        variant: "destructive",
-      })
-      return
-    }
-
-    setIsLoading(true)
-    try {
-      const [examName, examYear] = answerKeyExam.split("|")
-
-      const response = await fetch("/api/admin/upload-answer-key", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          examName,
-          examYear,
-          examDate: answerKeyDate,
-          shiftName: answerKeyShift,
-          subjectCombination: answerKeyCombination || "",
-          answerKeyData,
-        }),
-      })
-
-      const data = await response.json()
-      if (data.success) {
-        toast({
-          title: "Success",
-          description: data.message,
-        })
-        setAnswerKeyExam("")
-        setAnswerKeyDate("")
-        setAnswerKeyShift("")
-        setAnswerKeyCombination("")
-        setAnswerKeyData("")
-        fetchStats()
-      } else {
-        throw new Error(data.error)
-      }
-    } catch (error) {
-      toast({
-        title: "Upload Failed",
-        description: error instanceof Error ? error.message : "Unknown error occurred",
-        variant: "destructive",
-      })
-    } finally {
-      setIsLoading(false)
     }
   }
 
@@ -693,8 +639,7 @@ export default function AdminDashboard() {
         <Tabs defaultValue="exams" className="space-y-6">
           <TabsList className="grid w-full grid-cols-6">
             <TabsTrigger value="exams">Manage Exams</TabsTrigger>
-            <TabsTrigger value="upload">Upload Answer Key</TabsTrigger>
-            <TabsTrigger value="manual">Manual Entry</TabsTrigger>
+            <TabsTrigger value="manual">Answer Key Entry</TabsTrigger>
             <TabsTrigger value="marking">Marking Schemes</TabsTrigger>
             <TabsTrigger value="pending" className="relative">
               Pending Approvals
@@ -985,122 +930,6 @@ export default function AdminDashboard() {
                 </CardContent>
               </Card>
             </div>
-          </TabsContent>
-
-          <TabsContent value="upload">
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Upload className="h-5 w-5" />
-                  Upload New Answer Key
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                  <div>
-                    <Label htmlFor="answerKeyExam">Exam</Label>
-                    <Select value={answerKeyExam} onValueChange={setAnswerKeyExam}>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select exam" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {exams.map((exam) => (
-                          <SelectItem key={exam.id} value={`${exam.name}|${exam.year}`}>
-                            {exam.name} {exam.year}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div>
-                    <Label htmlFor="answerKeyDate">Date</Label>
-                    <Select value={answerKeyDate} onValueChange={setAnswerKeyDate} disabled={!answerKeyExam}>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select date" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {answerKeyExam &&
-                          exams
-                            .find((exam) => `${exam.name}|${exam.year}` === answerKeyExam)
-                            ?.examDates.map((date) => (
-                              <SelectItem key={date.id} value={date.date}>
-                                {formatExamDate(new Date(date.date))}
-                              </SelectItem>
-                            ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div>
-                    <Label htmlFor="answerKeyShift">Shift</Label>
-                    <Select value={answerKeyShift} onValueChange={setAnswerKeyShift} disabled={!answerKeyDate}>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select shift" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {answerKeyExam &&
-                          answerKeyDate &&
-                          exams
-                            .find((exam) => `${exam.name}|${exam.year}` === answerKeyExam)
-                            ?.examDates.find((date) => date.date === answerKeyDate)
-                            ?.examShifts.map((shift) => (
-                              <SelectItem key={shift.id} value={shift.shiftName}>
-                                {shift.shiftName}
-                              </SelectItem>
-                            ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div>
-                    <Label htmlFor="answerKeyCombination">Combination (Optional)</Label>
-                    <Select
-                      value={answerKeyCombination}
-                      onValueChange={setAnswerKeyCombination}
-                      disabled={!answerKeyShift}
-                    >
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select combination" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {answerKeyExam &&
-                          answerKeyDate &&
-                          answerKeyShift &&
-                          exams
-                            .find((exam) => `${exam.name}|${exam.year}` === answerKeyExam)
-                            ?.examDates.find((date) => date.date === answerKeyDate)
-                            ?.examShifts.find((shift) => shift.shiftName === answerKeyShift)
-                            ?.subjectCombinations.map((combo) => (
-                              <SelectItem key={combo.id} value={combo.name}>
-                                {combo.name}
-                              </SelectItem>
-                            ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                </div>
-
-                <div>
-                  <Label htmlFor="answerKeyData">Answer Key Data</Label>
-                  <Textarea
-                    id="answerKeyData"
-                    placeholder="Sno	Subject	QuestionID	Correct Answer ID&#10;1	BIOLOGY	226895708423	2268952746780&#10;2	BIOLOGY	226895708424	2268952746784"
-                    value={answerKeyData}
-                    onChange={(e) => setAnswerKeyData(e.target.value)}
-                    rows={10}
-                  />
-                  <p className="text-sm text-gray-500 mt-2">
-                    Format: Tab-separated values with columns: Sno, Subject, QuestionID, Correct Answer ID
-                  </p>
-                </div>
-
-                <Button
-                  onClick={handleUploadAnswerKey}
-                  disabled={isLoading || !answerKeyExam || !answerKeyDate || !answerKeyShift || !answerKeyData}
-                  className="w-full"
-                >
-                  {isLoading ? "Uploading..." : "Upload Answer Key"}
-                </Button>
-              </CardContent>
-            </Card>
           </TabsContent>
 
           <TabsContent value="manual">

@@ -22,7 +22,7 @@ const MarkdownRenderer: React.FC<{ content: string }> = ({ content }) => {
     return (
         <div
             className="prose prose-slate lg:prose-lg max-w-full
-                        p-6 sm:p-8
+                        p-2 sm:p-3
                        overflow-auto scrollbar-thin scrollbar-thumb-slate-400
                        dark:scrollbar-thumb-slate-600 scrollbar-track-slate-200
                        dark:scrollbar-track-slate-700

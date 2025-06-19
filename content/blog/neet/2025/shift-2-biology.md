@@ -8,10 +8,6 @@ shift: "Shift 2"
 author: "Expert Team"
 ---
 
-# NEET 2025 Shift 2 Biology Analysis
-
-This comprehensive analysis covers the Biology section from NEET 2025 Shift 2 examination.
-
 ## Question Distribution
 
 The Biology section consisted of 50 questions covering:
