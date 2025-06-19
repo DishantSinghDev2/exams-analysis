@@ -1,4 +1,5 @@
 import { GoogleGenerativeAI } from "@google/generative-ai"
+import Tesseract from "tesseract.js"
 
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY!)
 
@@ -89,6 +90,54 @@ ${rawAnswerKey}
     return {
       success: false,
       error: "Failed to process answer key with AI",
+    }
+  }
+}
+
+// Explaination of the questions (image of question will be fetched from its URL and then sent to Gemini for explanation) with student's selected answer and correct answer(makred as correct in the answer key)
+export async function explainQuestionWithAI(
+  extractedText: string,
+  studentAnswer: string,
+  correctAnswer: string,
+  subject: string
+): Promise<{
+  success: boolean
+  explanation?: string
+  error?: string
+}> {
+  try {
+    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" })
+    const prompt = `
+You are an expert at explaining exam questions and answers. I will provide you with a question, the student's selected answer, and the correct answer. Your task is to provide a clear and concise explanation of why the correct answer is correct and why the student's answer is incorrect.
+
+QUESTION: ${extractedText}
+STUDENT'S ANSWER: ${studentAnswer}
+CORRECT ANSWER: ${correctAnswer}
+SUBJECT: ${subject}
+
+
+EXPLANATION FORMAT: Provide a detailed explanation in simple language, suitable for a student who may not understand complex terminology. Focus on the key concepts and reasoning behind the correct answer.
+`
+
+    const result = await model.generateContent(prompt)
+    const response = await result.response
+    const text = response.text().trim()
+
+    if (!text) {
+      return {
+        success: false,
+        error: "AI did not provide any explanation",
+      }
+    }
+    return {
+      success: true,
+      explanation: text,
+    }
+  } catch (error) {
+    console.error("Gemini API error:", error)
+    return {
+      success: false,
+      error: "Failed to explain question with AI",
     }
   }
 }
