@@ -1,7 +1,7 @@
 interface ParsedResponse {
   questionId: string
   chosenOption: string
-  status: "Answered" | "Not Answered"
+  status: "Answered" | "Not Answered" | "Marked For Review" | "Not Attempted and Marked For Review"
   subject: string
   imageUrl?: string
 }
@@ -59,66 +59,54 @@ function parseHTMLResponseSheet(content: string): ParsedData {
   // Extract questions from each question panel
   const questionPanels = content.matchAll(
     /<div class="question-pnl"[^>]*>([\s\S]*?)<\/div>\s*(?=<div class="question-pnl"|<\/div>\s*<\/div>)/g,
-  )
+  );
 
-  const currentSection = sections[0] || "Unknown"
-  const sectionIndex = 0
+  const currentSection = sections[0] || "Unknown";
 
   for (const panel of Array.from(questionPanels)) {
-    const panelContent = panel[1]
+    const panelContent = panel[1];
 
     // Extract question information
-    const questionIdMatch = panelContent.match(/<td align="right">Question ID :<\/td>\s*<td class="bold">(\d+)<\/td>/)
+    const questionIdMatch = panelContent.match(/<td align="right">Question ID :<\/td>\s*<td class="bold">(\d+)<\/td>/);
     const statusMatch = panelContent.match(
-      /<td align="right">Status :<\/td>\s*<td class="bold">(Answered|Not Answered)<\/td>/,
-    )
+      /<td align="right">Status :<\/td>\s*<td class="bold">(Answered|Not Answered|Marked For Review|Not Attempted and Marked For Review)<\/td>/,
+    );
     const chosenOptionMatch = panelContent.match(
       /<td align="right">Chosen Option :<\/td>\s*<td class="bold">(\d+)<\/td>/,
-    )
+    );
 
     // Extract image URL
-    const imageMatch = panelContent.match(/<img[^>]+src="([^"]+)"/)
-    const imageUrl = imageMatch ? imageMatch[1] : undefined
+    const imageMatch = panelContent.match(/<img[^>]+src="([^"]+)"/);
+    const imageUrl = imageMatch ? imageMatch[1] : undefined;
 
     // Extract option IDs to map chosen option number to option ID
-    const optionIds: string[] = []
+    const optionIds: string[] = [];
     const optionMatches = panelContent.matchAll(
       /<td align="right">Option (\d+) ID :<\/td>\s*<td class="bold">(\d+)<\/td>/g,
-    )
+    );
 
     for (const optionMatch of Array.from(optionMatches)) {
-      const optionNumber = Number.parseInt(optionMatch[1])
-      const optionId = optionMatch[2]
-      optionIds[optionNumber - 1] = optionId // Convert to 0-based index
+      const optionNumber = Number.parseInt(optionMatch[1]);
+      const optionId = optionMatch[2];
+      optionIds[optionNumber - 1] = optionId; // Convert to 0-based index
     }
 
     if (questionIdMatch && statusMatch) {
-      let chosenOptionId = ""
+      let chosenOptionId = "";
 
       if (chosenOptionMatch && statusMatch[1] === "Answered") {
-        const chosenOptionNumber = Number.parseInt(chosenOptionMatch[1])
-        chosenOptionId = optionIds[chosenOptionNumber - 1] || chosenOptionMatch[1]
+        const chosenOptionNumber = Number.parseInt(chosenOptionMatch[1]);
+        chosenOptionId = optionIds[chosenOptionNumber - 1] || chosenOptionMatch[1];
       }
 
       responses.push({
         questionId: questionIdMatch[1],
         chosenOption: chosenOptionId,
-        status: statusMatch[1] as "Answered" | "Not Answered",
+        status: statusMatch[1] as "Answered" | "Not Answered" | "Marked For Review" | "Not Attempted and Marked For Review",
         subject: currentSection,
         imageUrl: imageUrl, // Add image URL to response
-      })
+      });
     }
-  }
-
-  // If we have multiple sections, try to distribute questions accordingly
-  if (sections.length > 1) {
-    const questionsPerSection = Math.ceil(responses.length / sections.length)
-    responses.forEach((response, index) => {
-      const sectionIndex = Math.floor(index / questionsPerSection)
-      if (sections[sectionIndex]) {
-        response.subject = sections[sectionIndex]
-      }
-    })
   }
 
   return {
@@ -129,60 +117,60 @@ function parseHTMLResponseSheet(content: string): ParsedData {
     testTime: testTimeMatch?.[1]?.trim() || "",
     subject: subjectMatch?.[1]?.trim() || "",
     responses,
-  }
+  };
 }
 
 function parseTextResponseSheet(content: string): ParsedData {
   // Original text-based parsing logic
-  const applicationNoMatch = content.match(/Application No\s*(\d+)/)
-  const candidateNameMatch = content.match(/Candidate Name\s*([^\n\r]+)/)
-  const rollNoMatch = content.match(/Roll No\.\s*([^\n\r]+)/)
-  const testDateMatch = content.match(/Test Date\s*([^\n\r]+)/)
-  const testTimeMatch = content.match(/Test Time\s*([^\n\r]+)/)
-  const subjectMatch = content.match(/Subject\s*([^\n\r]+)/)
+  const applicationNoMatch = content.match(/Application No\s*(\d+)/);
+  const candidateNameMatch = content.match(/Candidate Name\s*([^\n\r]+)/);
+  const rollNoMatch = content.match(/Roll No\.\s*([^\n\r]+)/);
+  const testDateMatch = content.match(/Test Date\s*([^\n\r]+)/);
+  const testTimeMatch = content.match(/Test Time\s*([^\n\r]+)/);
+  const subjectMatch = content.match(/Subject\s*([^\n\r]+)/);
 
   if (!applicationNoMatch || !candidateNameMatch || !rollNoMatch) {
-    throw new Error("Invalid response sheet format - missing required student information")
+    throw new Error("Invalid response sheet format - missing required student information");
   }
 
-  const responses: ParsedResponse[] = []
+  const responses: ParsedResponse[] = [];
 
   // Extract questions and answers
   const questionRegex =
-    /Q\.(\d+)[\s\S]*?Question ID\s*:\s*(\d+)[\s\S]*?Status\s*:\s*(Answered|Not Answered)[\s\S]*?(?:Chosen Option\s*:\s*(\d+))?/g
-  const sectionRegex = /Section\s*:\s*([^\n\r]+)/g
+    /Q\.(\d+)[\s\S]*?Question ID\s*:\s*(\d+)[\s\S]*?Status\s*:\s*(Answered|Not Answered|Marked For Review|Not Attempted and Marked For Review)[\s\S]*?(?:Chosen Option\s*:\s*(\d+))?/g;
+  const sectionRegex = /Section\s*:\s*([^\n\r]+)/g;
 
-  let currentSection = "Unknown"
-  let sectionMatch
-  let questionMatch
+  let currentSection = "Unknown";
+  let sectionMatch;
+  let questionMatch;
 
   // Find all sections
-  const sections: { name: string; position: number }[] = []
+  const sections: { name: string; position: number }[] = [];
   while ((sectionMatch = sectionRegex.exec(content)) !== null) {
     sections.push({
       name: sectionMatch[1].trim(),
       position: sectionMatch.index,
-    })
+    });
   }
 
   // Parse questions
   while ((questionMatch = questionRegex.exec(content)) !== null) {
-    const questionPosition = questionMatch.index
+    const questionPosition = questionMatch.index;
 
     // Find which section this question belongs to
     for (let i = sections.length - 1; i >= 0; i--) {
       if (questionPosition > sections[i].position) {
-        currentSection = sections[i].name
-        break
+        currentSection = sections[i].name;
+        break;
       }
     }
 
     responses.push({
       questionId: questionMatch[2],
       chosenOption: questionMatch[4] || "",
-      status: questionMatch[3] as "Answered" | "Not Answered",
+      status: questionMatch[3] as "Answered" | "Not Answered" | "Marked For Review" | "Not Attempted and Marked For Review",
       subject: currentSection,
-    })
+    });
   }
 
   return {
@@ -193,9 +181,8 @@ function parseTextResponseSheet(content: string): ParsedData {
     testTime: testTimeMatch?.[1]?.trim() || "",
     subject: subjectMatch?.[1]?.trim() || "",
     responses,
-  }
+  };
 }
-
 // Updated parser for new tab-separated format
 export function parseAnswerKey(answerKeyText: string): Array<{
   sno: string

@@ -88,32 +88,36 @@ export async function analyzeResponse(
     const subjectResponses = responses.filter((r) => r.subject === subject)
     totalQuestions += subjectResponses.length
 
-    for (const response of subjectResponses) {
-      const correctAnswerId = answerMap.get(response.questionId)
-      let status: "Correct" | "Incorrect" | "Unattempted" = "Unattempted"
-      let marksAwarded = markingScheme.unattemptedMarks
-
-      if (response.status === "Answered" && response.chosenOption) {
-        attempted++
-        attemptedQuestions++
+        for (const response of subjectResponses) {
+      const correctAnswerId = answerMap.get(response.questionId);
+      let status: "Correct" | "Incorrect" | "Unattempted" | "Marked For Review" | "Not Attempted and Marked For Review" = "Unattempted";
+      let marksAwarded = markingScheme.unattemptedMarks;
+    
+      if ((response.status === "Answered" || response.status === "Marked For Review") && response.chosenOption) {
+        attempted++;
+        attemptedQuestions++;
         if (correctAnswerId && response.chosenOption === correctAnswerId) {
-          status = "Correct"
-          marksAwarded = markingScheme.correctMarks
-          correct++
-          correctAnswers++
+          status = "Correct";
+          marksAwarded = markingScheme.correctMarks;
+          correct++;
+          correctAnswers++;
         } else {
-          status = "Incorrect"
-          marksAwarded = markingScheme.incorrectMarks
-          incorrect++
-          incorrectAnswers++
+          status = "Incorrect";
+          marksAwarded = markingScheme.incorrectMarks;
+          incorrect++;
+          incorrectAnswers++;
         }
+      } else if (response.status === "Not Attempted and Marked For Review") {
+        status = "Not Attempted and Marked For Review";
+        unattempted++;
+        unansweredQuestions++;
       } else {
-        unattempted++
-        unansweredQuestions++
+        unattempted++;
+        unansweredQuestions++;
       }
-
-      subjectScore += marksAwarded
-
+    
+      subjectScore += marksAwarded;
+    
       detailedComparison.push({
         questionId: response.questionId,
         subject: subject,
@@ -122,7 +126,7 @@ export async function analyzeResponse(
         status,
         marksAwarded,
         imageUrl: response.imageUrl || "",
-      })
+      });
     }
 
     const accuracy = attempted > 0 ? (correct / attempted) * 100 : 0
