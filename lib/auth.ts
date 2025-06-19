@@ -2,6 +2,23 @@ import type { NextAuthOptions } from "next-auth"
 import GitHubProvider from "next-auth/providers/github"
 import { prisma } from "./prisma"
 
+// Extend the Profile type to include the 'id' property
+declare module "next-auth" {
+  interface Profile {
+    id?: string;
+  }
+
+  interface Session {
+    user: {
+      name?: string | null;
+      email?: string | null;
+      image?: string | null;
+      id?: string;
+      isAdmin?: boolean;
+    };
+  }
+}
+
 export const authOptions: NextAuthOptions = {
   providers: [
     GitHubProvider({
