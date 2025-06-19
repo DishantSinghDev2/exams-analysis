@@ -9,7 +9,7 @@ import { Textarea } from "@/components/ui/textarea"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Badge } from "@/components/ui/badge"
-import { Upload, Link, FileText, Calendar, Clock, BookOpen, GraduationCap } from "lucide-react"
+import { Upload, Link, FileText, Calendar, Clock, BookOpen, GraduationCap, Paperclip } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
 import { parsePDFResponse } from "@/lib/pdf-parser"
 import type { AnalysisResult } from "@/types"
@@ -323,9 +323,9 @@ export default function HomePage() {
             </CardHeader>
             <CardContent className="space-y-6">
               {/* Exam Selection */}
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                <div>
-                  <Label htmlFor="exam" className="flex items-center gap-2">
+              <div className="flex max-w-full flex-wrap md:flex-nowrap justify-between gap-4">
+                <div className="w-full">
+                  <Label htmlFor="exam" className="flex items-center gap-2 mb-2">
                     <GraduationCap className="h-4 w-4" />
                     Select Exam
                   </Label>
@@ -337,7 +337,7 @@ export default function HomePage() {
                     }}
                   >
                     <SelectTrigger>
-                      <SelectValue placeholder="Choose exam" />
+                      <SelectValue  placeholder="Choose exam" />
                     </SelectTrigger>
                     <SelectContent>
                       {exams.map((exam) => (
@@ -351,8 +351,8 @@ export default function HomePage() {
                   </Select>
                 </div>
 
-                <div>
-                  <Label htmlFor="date" className="flex items-center gap-2">
+                <div className="w-full">
+                  <Label htmlFor="date" className="flex items-center gap-2 mb-2">
                     <Calendar className="h-4 w-4" />
                     Exam Date
                   </Label>
@@ -370,8 +370,8 @@ export default function HomePage() {
                   </Select>
                 </div>
 
-                <div>
-                  <Label htmlFor="shift" className="flex items-center gap-2">
+                <div className="w-full">
+                  <Label htmlFor="shift" className="flex items-center gap-2 mb-2">
                     <Clock className="h-4 w-4" />
                     Shift
                   </Label>
@@ -397,8 +397,10 @@ export default function HomePage() {
                 </div>
 
                 {hasSubjectCombinations && (
-                  <div>
-                    <Label htmlFor="combination">Subject Combination</Label>
+                  <div className="w-full">
+                    <Label htmlFor="combination" className="flex items-center gap-2 mb-2">
+                      <Paperclip className="h-4 w-4" />
+                      Subject Combination</Label>
                     <Select
                       value={selectedCombination}
                       onValueChange={setSelectedCombination}
@@ -580,7 +582,142 @@ export default function HomePage() {
             }}
           />
         )}
+      {/* Detailed information about the technology and data processing for better SEO */}
+      <div className="max-w-3xl mx-auto mt-12 space-y-8">
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-lg">How This Tool Works</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="space-y-2">
+        <h3 className="text-md font-semibold">Advanced Parsing Technology</h3>
+        <p className="text-sm text-gray-700">
+          Our tool uses advanced PDF parsing and HTML content extraction algorithms to process your response sheets. 
+          It ensures accurate data extraction, even from complex formats, to provide reliable results.
+        </p>
+            </div>
+            <div className="space-y-2">
+        <h3 className="text-md font-semibold">AI-Powered Analysis</h3>
+        <p className="text-sm text-gray-700">
+          The analysis engine is powered by AI models that evaluate your responses against the provided answer key. 
+          It calculates your marks and generates detailed subject-wise performance insights.
+        </p>
+            </div>
+            <div className="space-y-2">
+        <h3 className="text-md font-semibold">Real-Time Processing</h3>
+        <p className="text-sm text-gray-700">
+          Our system processes your data in real-time, ensuring you get instant results without any delays. 
+          The entire process is optimized for speed and accuracy.
+        </p>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-lg">How Your Data is Processed</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="space-y-2">
+        <h3 className="text-md font-semibold">Secure Uploads</h3>
+        <p className="text-sm text-gray-700">
+          When you upload your response sheet, it is securely transmitted to our servers using encrypted connections. 
+          We ensure that your data remains private and protected during the upload process.
+        </p>
+            </div>
+            <div className="space-y-2">
+        <h3 className="text-md font-semibold">Temporary Storage</h3>
+        <p className="text-sm text-gray-700">
+          Your response sheet data is stored temporarily on our servers for processing. 
+          Once the analysis is complete, the data is automatically deleted to ensure your privacy.
+        </p>
+            </div>
+            <div className="space-y-2">
+        <h3 className="text-md font-semibold">No Third-Party Sharing</h3>
+        <p className="text-sm text-gray-700">
+          We do not share your data with any third parties. All processing is done in-house, 
+          and your information is never used for purposes other than the analysis you requested.
+        </p>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-lg">Why Choose This Tool?</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="space-y-2">
+        <h3 className="text-md font-semibold">Accuracy You Can Trust</h3>
+        <p className="text-sm text-gray-700">
+          Our tool is designed to provide highly accurate results by leveraging cutting-edge technology. 
+          You can rely on it to analyze your performance with precision.
+        </p>
+            </div>
+            <div className="space-y-2">
+        <h3 className="text-md font-semibold">User-Friendly Interface</h3>
+        <p className="text-sm text-gray-700">
+          The interface is intuitive and easy to use, making it accessible for students of all technical skill levels. 
+          You can complete the analysis in just a few clicks.
+        </p>
+            </div>
+            <div className="space-y-2">
+        <h3 className="text-md font-semibold">Comprehensive Insights</h3>
+        <p className="text-sm text-gray-700">
+          Beyond just marks, the tool provides detailed insights into your subject-wise performance, 
+          helping you identify strengths and areas for improvement.
+        </p>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* More contents with FAQs for this JEE, NEET, CUET marks calculator */}
+      <div className="max-w-3xl mx-auto mt-12">
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-lg">Frequently Asked Questions</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="space-y-2">
+        <h3 className="text-md font-semibold">What is this tool?</h3>
+        <p className="text-sm text-gray-700">
+          This tool allows students to analyze their exam response sheets for JEE, NEET, and CUET exams. 
+          It calculates marks based on the provided answer key and gives detailed subject-wise performance analysis.
+        </p>
+            </div>
+            <div className="space-y-2">
+        <h3 className="text-md font-semibold">How do I use it?</h3>
+        <p className="text-sm text-gray-700">
+          Select your exam, date, and shift. Then provide your response sheet either by URL, pasting the content, 
+          or uploading a PDF file. If the answer key is not available, you can submit it for approval.
+        </p>
+            </div>
+            <div className="space-y-2">
+        <h3 className="text-md font-semibold">What if the answer key is not available?</h3>
+        <p className="text-sm text-gray-700">
+          If the answer key is not available, you can submit it for approval. 
+          The admin will review and approve it, after which you can analyze your response sheet.
+        </p>
+            </div>
+            <div className="space-y-2">
+        <h3 className="text-md font-semibold">Is my data secure?</h3>
+        <p className="text-sm text-gray-700">
+          Yes, we take data security seriously. Your response sheets and personal information are processed securely 
+          and are not shared with third parties without your consent.
+        </p>
+            </div>
+            <div className="space-y-2">
+        <h3 className="text-md font-semibold">Who can use this tool?</h3>
+        <p className="text-sm text-gray-700">
+          This tool is designed for students appearing for JEE, NEET, and CUET exams. 
+          It can be used by anyone who has their response sheet and wants to analyze their performance.
+        </p>
+            </div>
+          </CardContent>
+        </Card>
       </div>
     </div>
+  </div>
   )
 }

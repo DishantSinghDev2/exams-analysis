@@ -9,19 +9,8 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ success: false, error: "Missing required fields" }, { status: 400 })
     }
 
-    // Parse subjects from answer key data
-    const lines = answerKeyData.trim().split("\n")
-    const subjects = new Set<string>()
 
-    for (let i = 1; i < lines.length; i++) {
-      const parts = lines[i].split("|").map((p: string) => p.trim())
-      if (parts.length >= 2) {
-        subjects.add(parts[1])
-      }
-    }
-
-    // Create pending answer key entries for each subject
-    for (const subject of subjects) {
+    // Create pending answer key entries
       await prisma.pendingAnswerKey.create({
         data: {
           examName,
@@ -29,12 +18,11 @@ export async function POST(request: NextRequest) {
           examDate: new Date(examDate),
           shiftName,
           subjectCombination,
-          subject,
           answerKeyData,
+          subject: "Get Subject Name", // Replace with actual subject name if available
           submittedBy: "student",
         },
       })
-    }
 
     return NextResponse.json({
       success: true,

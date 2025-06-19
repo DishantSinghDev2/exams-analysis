@@ -16,6 +16,17 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ success: false, error: "All fields are required" }, { status: 400 })
     }
 
+    // Check if subject combination already exists
+    const existingCombination = await prisma.subjectCombination.findFirst({
+      where: {
+        examShiftId,
+        name,
+      },
+    })
+    if (existingCombination) {
+      return NextResponse.json({ success: false, error: "Subject combination already exists for this exam shift" }, { status: 400 })
+    }
+
     const subjectCombination = await prisma.subjectCombination.create({
       data: {
         examShiftId,

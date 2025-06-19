@@ -45,6 +45,17 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ success: false, error: "Name and year are required" }, { status: 400 })
     }
 
+    // Check if exam already exists
+    const existingExam = await prisma.exam.findFirst({
+      where: {
+        name,
+        year,
+      },
+    })
+    if (existingExam) {
+      return NextResponse.json({ success: false, error: "This exam already exists" }, { status: 400 })
+    }
+
     const exam = await prisma.exam.create({
       data: {
         name,

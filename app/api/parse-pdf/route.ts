@@ -23,6 +23,7 @@ export async function POST(request: NextRequest) {
       const pdfParse = (await import("pdf-parse")).default
       const data = await pdfParse(buffer)
       text = data.text
+      console.log("Extracted text length:", text)
 
       if (!text || text.length < 100) {
         throw new Error("Could not extract sufficient text from PDF")

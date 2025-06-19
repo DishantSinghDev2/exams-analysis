@@ -16,6 +16,17 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ success: false, error: "Exam ID and date are required" }, { status: 400 })
     }
 
+    // check if exam date already exists
+    const existingExamDate = await prisma.examDate.findFirst({
+      where: {
+        examId,
+        date: new Date(date),
+      },
+    })
+    if (existingExamDate) {
+      return NextResponse.json({ success: false, error: "Exam date already exists for this exam" }, { status: 400 })
+    }
+
     const examDate = await prisma.examDate.create({
       data: {
         examId,

@@ -13,7 +13,6 @@ export async function POST(request: NextRequest) {
 
     // Parse the response sheet
     const parsedData = await parseResponseSheet(responseInput)
-    console.log("Parsed Data:", parsedData)
 
     // Store the student response
     const studentResponse = await prisma.studentResponse.create({
