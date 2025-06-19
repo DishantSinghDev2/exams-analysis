@@ -296,7 +296,9 @@ export default function HomePage() {
             <GraduationCap className="h-10 w-10 text-blue-600" />
             <h1 className="text-4xl font-bold text-gray-900">Exam Response Analyzer</h1>
           </div>
-          <p className="text-lg text-gray-600 mb-4">Comprehensive analysis tool for competitive exam response sheets</p>
+            <p className="text-lg text-gray-600 mb-4">
+            Calculate Your JEE, NEET, and CUET Exam Marks with Ease
+            </p>
           {selectedExam && (
             <div className="flex items-center justify-center gap-2">
               <Badge variant="secondary" className="text-sm px-3 py-1">

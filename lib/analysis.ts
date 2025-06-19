@@ -88,11 +88,11 @@ export async function analyzeResponse(
     const subjectResponses = responses.filter((r) => r.subject === subject)
     totalQuestions += subjectResponses.length
 
-        for (const response of subjectResponses) {
+    for (const response of subjectResponses) {
       const correctAnswerId = answerMap.get(response.questionId);
       let status: "Correct" | "Incorrect" | "Unattempted" | "Marked For Review" | "Not Attempted and Marked For Review" = "Unattempted";
       let marksAwarded = markingScheme.unattemptedMarks;
-    
+
       if ((response.status === "Answered" || response.status === "Marked For Review") && response.chosenOption) {
         attempted++;
         attemptedQuestions++;
@@ -115,9 +115,9 @@ export async function analyzeResponse(
         unattempted++;
         unansweredQuestions++;
       }
-    
+
       subjectScore += marksAwarded;
-    
+
       detailedComparison.push({
         questionId: response.questionId,
         subject: subject,

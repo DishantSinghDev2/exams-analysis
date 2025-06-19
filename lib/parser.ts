@@ -85,6 +85,7 @@ function parseHTMLResponseSheet(content: string): ParsedData {
       /<td align="right">Option (\d+) ID :<\/td>\s*<td class="bold">(\d+)<\/td>/g,
     );
 
+
     for (const optionMatch of Array.from(optionMatches)) {
       const optionNumber = Number.parseInt(optionMatch[1]);
       const optionId = optionMatch[2];
@@ -94,7 +95,8 @@ function parseHTMLResponseSheet(content: string): ParsedData {
     if (questionIdMatch && statusMatch) {
       let chosenOptionId = "";
 
-      if (chosenOptionMatch && statusMatch[1] === "Answered") {
+      // Extract chosen option for both "Answered" and "Marked For Review"
+      if (chosenOptionMatch && (statusMatch[1] === "Answered" || statusMatch[1] === "Marked For Review")) {
         const chosenOptionNumber = Number.parseInt(chosenOptionMatch[1]);
         chosenOptionId = optionIds[chosenOptionNumber - 1] || chosenOptionMatch[1];
       }
