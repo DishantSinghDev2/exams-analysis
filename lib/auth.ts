@@ -13,7 +13,6 @@ export const authOptions: NextAuthOptions = {
         },
       },
       profile: async (profile, tokens) => {
-        console.log("GitHub profile received:", profile)
 
         let email = profile.email
 
