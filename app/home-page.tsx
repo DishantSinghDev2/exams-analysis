@@ -124,6 +124,7 @@ export default function HomePage() {
       setMessage("Sample exam history added. You can now analyze the sample response sheet. Visit /dubug in development mode to make yourself admin.");
     }
   }, []);
+  
 
 
   // Fetch history from local storage
@@ -379,7 +380,7 @@ export default function HomePage() {
         </div>
       </div>
       )}
-      <div className="max-w-6xl mx-auto">
+      <div className={`${message ? "mt-10" : ""} max-w-6xl mx-auto`}>
         {/* Header Section */}
         <div className="text-center mb-8">
           <div className="flex items-center justify-center gap-3 mb-4">
