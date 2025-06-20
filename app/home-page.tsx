@@ -39,6 +39,15 @@ interface ExamData {
   }>
 }
 
+interface ExamHistory {
+  inputType: "url" | "paste"
+  responseInput: string
+  selectedExam: ExamData | null
+  selectedDate: string
+  selectedShift: string
+  selectedCombination: string
+}
+
 export default function HomePage() {
   const [exams, setExams] = useState<ExamData[]>([])
   const [selectedExam, setSelectedExam] = useState<ExamData | null>(null)
@@ -46,7 +55,7 @@ export default function HomePage() {
   const [selectedShift, setSelectedShift] = useState("")
   const [selectedCombination, setSelectedCombination] = useState("")
   const [responseInput, setResponseInput] = useState("")
-  const [inputType, setInputType] = useState<"url" | "paste" | "file">("url")
+  const [inputType, setInputType] = useState<"url" | "paste">("url")
   const [isLoading, setIsLoading] = useState(false)
   const [isLoadingExams, setIsLoadingExams] = useState(true)
   const [analysisResult, setAnalysisResult] = useState<AnalysisResult | null>(null)
@@ -54,6 +63,85 @@ export default function HomePage() {
   const [answerKeyInput, setAnswerKeyInput] = useState("")
   const { toast } = useToast()
   const [selectedFile, setSelectedFile] = useState<File | null>(null)
+  const [history, setHistory] = useState<ExamHistory[] | []>([])
+
+  // Check if the URL contains ?mode=with_sample and add to history
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.get("mode") === "with_sample") {
+      const sampleHistoryEntry: ExamHistory = {
+        inputType: "url",
+        responseInput: "https://cdn3.digialm.com//per/g28/pub/2083/touchstone/AssessmentQPHTMLMode1//2083O25179/2083O25179S54D18779/1749100892434601/HR10004902_2083O25179S54D18779E1.html",
+        selectedExam: {
+          id: "cmc29ar880000urqgdmq44g8y",
+          name: "CUET",
+          year: "2025",
+          description: "The Common University Entrance Test (CUET) is a standardized entrance examination administered by the National Testing Agency (NTA) for undergraduate (UG) admissions to participating central, state, and private universities in India",
+          hasSubjectCombinations: true,
+          displayName: "CUET 2025",
+          dates: [
+            {
+              id: "cmc29ayvj0002urqgzn66siow",
+              date: "2025-06-03T00:00:00.000Z",
+              formattedDate: "3rd June 2025",
+              shifts: [
+                {
+                  id: "cmc29bi6h0004urqggjomimrs",
+                  name: "Shift 2, Afternoon",
+                  startTime: undefined,
+                  endTime: undefined,
+                  combinations: [
+                    {
+                      id: "cmc29d66z0006urqg9wbhgfzh",
+                      name: "Combination 2",
+                      subjects: ["Biology"],
+                    },
+                  ],
+                },
+              ],
+            },
+          ],
+        },
+        selectedDate: "cmc29ayvj0002urqgzn66siow",
+        selectedShift: "cmc29bi6h0004urqggjomimrs",
+        selectedCombination: "cmc29d66z0006urqg9wbhgfzh",
+      };
+
+      setHistory((prev) => {
+        const isDuplicate = prev.some(
+          (entry) =>
+            entry.inputType === sampleHistoryEntry.inputType &&
+            entry.responseInput === sampleHistoryEntry.responseInput &&
+            entry.selectedExam?.id === sampleHistoryEntry.selectedExam?.id &&
+            entry.selectedDate === sampleHistoryEntry.selectedDate &&
+            entry.selectedShift === sampleHistoryEntry.selectedShift &&
+            entry.selectedCombination === sampleHistoryEntry.selectedCombination
+        );
+        return isDuplicate ? prev : [...prev, sampleHistoryEntry];
+      });
+    }
+  }, []);
+
+  // Fetch history from local storage
+  useEffect(() => {
+    const storedHistory = localStorage.getItem("examHistory")
+    if (storedHistory) {
+      try {
+        const parsedHistory = JSON.parse(storedHistory)
+        setHistory(parsedHistory)
+      } catch (error) {
+        console.error("Failed to parse exam history from local storage", error)
+      }
+    }
+  }, [])
+
+  // Save history to local storage whenever it changes
+  useEffect(() => {
+    if (!history || history.length === 0) return
+    // Limit history to last 5 entries
+    const limitedHistory = history.slice(-5)
+    localStorage.setItem("examHistory", JSON.stringify(limitedHistory))
+  }, [history])
 
   // Get available dates for selected exam
   const availableDates = selectedExam?.dates || []
@@ -73,22 +161,7 @@ export default function HomePage() {
     fetchExams()
   }, [])
 
-  // Reset dependent selections when parent selection changes
-  useEffect(() => {
-    setSelectedDate("")
-    setSelectedShift("")
-    setSelectedCombination("")
-  }, [selectedExam])
-
-  useEffect(() => {
-    setSelectedShift("")
-    setSelectedCombination("")
-  }, [selectedDate])
-
-  useEffect(() => {
-    setSelectedCombination("")
-  }, [selectedShift])
-
+  
   const fetchExams = async () => {
     try {
       const response = await fetch("/api/exams")
@@ -96,6 +169,7 @@ export default function HomePage() {
 
       if (data.success) {
         setExams(data.exams)
+        setSelectedExam(data.exams[0] || null)
       } else {
         throw new Error(data.error)
       }
@@ -136,6 +210,29 @@ export default function HomePage() {
       const selectedDateObj = availableDates.find((d) => d.id === selectedDate)
       const selectedShiftObj = availableShifts.find((s) => s.id === selectedShift)
       const selectedCombinationObj = availableCombinations.find((c) => c.id === selectedCombination)
+
+      // Save to history without duplicates
+      const newHistoryEntry: ExamHistory = {
+        inputType,
+        responseInput: finalInput,
+        selectedExam,
+        selectedDate: selectedDateObj?.id || "",
+        selectedShift: selectedShiftObj?.id || "",
+        selectedCombination: selectedCombinationObj?.id || "",
+      }
+
+      setHistory((prev) => {
+        const isDuplicate = prev.some(
+          (entry) =>
+        entry.inputType === newHistoryEntry.inputType &&
+        entry.responseInput === newHistoryEntry.responseInput &&
+        entry.selectedExam?.id === newHistoryEntry.selectedExam?.id &&
+        entry.selectedDate === newHistoryEntry.selectedDate &&
+        entry.selectedShift === newHistoryEntry.selectedShift &&
+        entry.selectedCombination === newHistoryEntry.selectedCombination
+        )
+        return isDuplicate ? prev : [...prev, newHistoryEntry]
+      })
 
       const response = await fetch("/api/analyze", {
         method: "POST",
@@ -272,9 +369,9 @@ export default function HomePage() {
             <GraduationCap className="h-10 w-10 text-blue-600" />
             <h1 className="text-4xl font-bold text-gray-900">Exam Response Analyzer</h1>
           </div>
-            <p className="text-lg text-gray-600 mb-4">
+          <p className="text-lg text-gray-600 mb-4">
             Calculate Your JEE, NEET, and CUET Exam Marks with Ease
-            </p>
+          </p>
           {selectedExam && (
             <div className="flex items-center justify-center gap-2">
               <Badge variant="secondary" className="text-sm px-3 py-1">
@@ -313,7 +410,7 @@ export default function HomePage() {
                     }}
                   >
                     <SelectTrigger>
-                      <SelectValue  placeholder="Choose exam" />
+                      <SelectValue placeholder="Choose exam" />
                     </SelectTrigger>
                     <SelectContent>
                       {exams.map((exam) => (
@@ -436,7 +533,7 @@ export default function HomePage() {
               )}
 
               {/* Response Input Tabs */}
-              <Tabs value={inputType} onValueChange={(value) => setInputType(value as "url" | "paste" | "file")}>
+              <Tabs value={inputType} onValueChange={(value) => setInputType(value as "url" | "paste")}>
                 <TabsList className="grid w-full grid-cols-3">
                   <TabsTrigger value="url" className="flex items-center gap-2">
                     <Link className="h-4 w-4" />
@@ -475,6 +572,49 @@ export default function HomePage() {
               <Button onClick={handleAnalyze} disabled={isLoading} className="w-full" size="lg">
                 {isLoading ? "Analyzing..." : "Analyze Response Sheet"}
               </Button>
+
+
+              {/* Show all the history with use button */}
+              {history.length > 0 && (
+                <div className="mt-6">
+                  <h3 className="text-lg font-semibold mb-2">Analysis History</h3>
+                  <div className="space-y-2">
+                    {history.map((entry, index) => (
+                      <Card key={index} className="bg-gray-50 hover:bg-gray-100 transition-colors">
+                        <CardContent className="p-4">
+                          <div className="flex items-center justify-between">
+                            <div>
+                              <h4 className="font-medium text-gray-800">
+                                {entry.selectedExam?.displayName || "Unknown Exam"}
+                              </h4>
+                              <p className="text-sm text-gray-600">
+                                {entry.selectedDate ? entry.selectedExam?.dates.find((d) => d.id === entry.selectedDate)?.formattedDate : "No date selected"}
+                                {" "}
+                                {entry.selectedShift ? `- ${entry.selectedExam?.dates.find((d) => d.id === entry.selectedDate)?.shifts.find((s) => s.id === entry.selectedShift)?.name}` : ""}
+                                {entry.selectedCombination ? ` - ${entry.selectedExam?.dates.find((d) => d.id === entry.selectedDate)?.shifts.find((s) => s.id === entry.selectedShift)?.combinations.find((c) => c.id === entry.selectedCombination)?.name}` : ""}
+                              </p>
+                            </div>
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => {
+                                setSelectedExam(entry.selectedExam || null);
+                                setSelectedDate(entry.selectedDate || "");
+                                setSelectedShift(entry.selectedShift || "");
+                                setSelectedCombination(entry.selectedCombination || "");
+                                setResponseInput(entry.responseInput || "");
+                                setInputType(entry.inputType || "url");
+                              }}
+                            >
+                              Use This
+                            </Button>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    ))}
+                  </div>
+                </div>
+              )}
             </CardContent>
           </Card>
         )}
@@ -544,142 +684,142 @@ export default function HomePage() {
             }}
           />
         )}
-      {/* Detailed information about the technology and data processing for better SEO */}
-      <div className="max-w-3xl mx-auto mt-12 space-y-8">
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-lg">How This Tool Works</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="space-y-2">
-        <h3 className="text-md font-semibold">Advanced Parsing Technology</h3>
-        <p className="text-sm text-gray-700">
-          Our tool uses advanced PDF parsing and HTML content extraction algorithms to process your response sheets. 
-          It ensures accurate data extraction, even from complex formats, to provide reliable results.
-        </p>
-            </div>
-            <div className="space-y-2">
-        <h3 className="text-md font-semibold">AI-Powered Analysis</h3>
-        <p className="text-sm text-gray-700">
-          The analysis engine is powered by AI models that evaluate your responses against the provided answer key. 
-          It calculates your marks and generates detailed subject-wise performance insights.
-        </p>
-            </div>
-            <div className="space-y-2">
-        <h3 className="text-md font-semibold">Real-Time Processing</h3>
-        <p className="text-sm text-gray-700">
-          Our system processes your data in real-time, ensuring you get instant results without any delays. 
-          The entire process is optimized for speed and accuracy.
-        </p>
-            </div>
-          </CardContent>
-        </Card>
+        {/* Detailed information about the technology and data processing for better SEO */}
+        <div className="max-w-3xl mx-auto mt-12 space-y-8">
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-lg">How This Tool Works</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="space-y-2">
+                <h3 className="text-md font-semibold">Advanced Parsing Technology</h3>
+                <p className="text-sm text-gray-700">
+                  Our tool uses advanced PDF parsing and HTML content extraction algorithms to process your response sheets.
+                  It ensures accurate data extraction, even from complex formats, to provide reliable results.
+                </p>
+              </div>
+              <div className="space-y-2">
+                <h3 className="text-md font-semibold">AI-Powered Analysis</h3>
+                <p className="text-sm text-gray-700">
+                  The analysis engine is powered by AI models that evaluate your responses against the provided answer key.
+                  It calculates your marks and generates detailed subject-wise performance insights.
+                </p>
+              </div>
+              <div className="space-y-2">
+                <h3 className="text-md font-semibold">Real-Time Processing</h3>
+                <p className="text-sm text-gray-700">
+                  Our system processes your data in real-time, ensuring you get instant results without any delays.
+                  The entire process is optimized for speed and accuracy.
+                </p>
+              </div>
+            </CardContent>
+          </Card>
 
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-lg">How Your Data is Processed</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="space-y-2">
-        <h3 className="text-md font-semibold">Secure Uploads</h3>
-        <p className="text-sm text-gray-700">
-          When you upload your response sheet, it is securely transmitted to our servers using encrypted connections. 
-          We ensure that your data remains private and protected during the upload process.
-        </p>
-            </div>
-            <div className="space-y-2">
-        <h3 className="text-md font-semibold">Temporary Storage</h3>
-        <p className="text-sm text-gray-700">
-          Your response sheet data is stored temporarily on our servers for processing. 
-          Once the analysis is complete, the data is automatically deleted to ensure your privacy.
-        </p>
-            </div>
-            <div className="space-y-2">
-        <h3 className="text-md font-semibold">No Third-Party Sharing</h3>
-        <p className="text-sm text-gray-700">
-          We do not share your data with any third parties. All processing is done in-house, 
-          and your information is never used for purposes other than the analysis you requested.
-        </p>
-            </div>
-          </CardContent>
-        </Card>
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-lg">How Your Data is Processed</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="space-y-2">
+                <h3 className="text-md font-semibold">Secure Uploads</h3>
+                <p className="text-sm text-gray-700">
+                  When you upload your response sheet, it is securely transmitted to our servers using encrypted connections.
+                  We ensure that your data remains private and protected during the upload process.
+                </p>
+              </div>
+              <div className="space-y-2">
+                <h3 className="text-md font-semibold">Temporary Storage</h3>
+                <p className="text-sm text-gray-700">
+                  Your response sheet data is stored temporarily on our servers for processing.
+                  Once the analysis is complete, the data is automatically deleted to ensure your privacy.
+                </p>
+              </div>
+              <div className="space-y-2">
+                <h3 className="text-md font-semibold">No Third-Party Sharing</h3>
+                <p className="text-sm text-gray-700">
+                  We do not share your data with any third parties. All processing is done in-house,
+                  and your information is never used for purposes other than the analysis you requested.
+                </p>
+              </div>
+            </CardContent>
+          </Card>
 
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-lg">Why Choose This Tool?</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="space-y-2">
-        <h3 className="text-md font-semibold">Accuracy You Can Trust</h3>
-        <p className="text-sm text-gray-700">
-          Our tool is designed to provide highly accurate results by leveraging cutting-edge technology. 
-          You can rely on it to analyze your performance with precision.
-        </p>
-            </div>
-            <div className="space-y-2">
-        <h3 className="text-md font-semibold">User-Friendly Interface</h3>
-        <p className="text-sm text-gray-700">
-          The interface is intuitive and easy to use, making it accessible for students of all technical skill levels. 
-          You can complete the analysis in just a few clicks.
-        </p>
-            </div>
-            <div className="space-y-2">
-        <h3 className="text-md font-semibold">Comprehensive Insights</h3>
-        <p className="text-sm text-gray-700">
-          Beyond just marks, the tool provides detailed insights into your subject-wise performance, 
-          helping you identify strengths and areas for improvement.
-        </p>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-lg">Why Choose This Tool?</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="space-y-2">
+                <h3 className="text-md font-semibold">Accuracy You Can Trust</h3>
+                <p className="text-sm text-gray-700">
+                  Our tool is designed to provide highly accurate results by leveraging cutting-edge technology.
+                  You can rely on it to analyze your performance with precision.
+                </p>
+              </div>
+              <div className="space-y-2">
+                <h3 className="text-md font-semibold">User-Friendly Interface</h3>
+                <p className="text-sm text-gray-700">
+                  The interface is intuitive and easy to use, making it accessible for students of all technical skill levels.
+                  You can complete the analysis in just a few clicks.
+                </p>
+              </div>
+              <div className="space-y-2">
+                <h3 className="text-md font-semibold">Comprehensive Insights</h3>
+                <p className="text-sm text-gray-700">
+                  Beyond just marks, the tool provides detailed insights into your subject-wise performance,
+                  helping you identify strengths and areas for improvement.
+                </p>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
 
-      {/* More contents with FAQs for this JEE, NEET, CUET marks calculator */}
-      <div className="max-w-3xl mx-auto mt-12">
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-lg">Frequently Asked Questions</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="space-y-2">
-        <h3 className="text-md font-semibold">What is this tool?</h3>
-        <p className="text-sm text-gray-700">
-          This tool allows students to analyze their exam response sheets for JEE, NEET, and CUET exams. 
-          It calculates marks based on the provided answer key and gives detailed subject-wise performance analysis.
-        </p>
-            </div>
-            <div className="space-y-2">
-        <h3 className="text-md font-semibold">How do I use it?</h3>
-        <p className="text-sm text-gray-700">
-          Select your exam, date, and shift. Then provide your response sheet either by URL, pasting the content, 
-          or uploading a PDF file. If the answer key is not available, you can submit it for approval.
-        </p>
-            </div>
-            <div className="space-y-2">
-        <h3 className="text-md font-semibold">What if the answer key is not available?</h3>
-        <p className="text-sm text-gray-700">
-          If the answer key is not available, you can submit it for approval. 
-          The admin will review and approve it, after which you can analyze your response sheet.
-        </p>
-            </div>
-            <div className="space-y-2">
-        <h3 className="text-md font-semibold">Is my data secure?</h3>
-        <p className="text-sm text-gray-700">
-          Yes, we take data security seriously. Your response sheets and personal information are processed securely 
-          and are not shared with third parties without your consent.
-        </p>
-            </div>
-            <div className="space-y-2">
-        <h3 className="text-md font-semibold">Who can use this tool?</h3>
-        <p className="text-sm text-gray-700">
-          This tool is designed for students appearing for JEE, NEET, and CUET exams. 
-          It can be used by anyone who has their response sheet and wants to analyze their performance.
-        </p>
-            </div>
-          </CardContent>
-        </Card>
+        {/* More contents with FAQs for this JEE, NEET, CUET marks calculator */}
+        <div className="max-w-3xl mx-auto mt-12">
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-lg">Frequently Asked Questions</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="space-y-2">
+                <h3 className="text-md font-semibold">What is this tool?</h3>
+                <p className="text-sm text-gray-700">
+                  This tool allows students to analyze their exam response sheets for JEE, NEET, and CUET exams.
+                  It calculates marks based on the provided answer key and gives detailed subject-wise performance analysis.
+                </p>
+              </div>
+              <div className="space-y-2">
+                <h3 className="text-md font-semibold">How do I use it?</h3>
+                <p className="text-sm text-gray-700">
+                  Select your exam, date, and shift. Then provide your response sheet either by URL, pasting the content,
+                  or uploading a PDF file. If the answer key is not available, you can submit it for approval.
+                </p>
+              </div>
+              <div className="space-y-2">
+                <h3 className="text-md font-semibold">What if the answer key is not available?</h3>
+                <p className="text-sm text-gray-700">
+                  If the answer key is not available, you can submit it for approval.
+                  The admin will review and approve it, after which you can analyze your response sheet.
+                </p>
+              </div>
+              <div className="space-y-2">
+                <h3 className="text-md font-semibold">Is my data secure?</h3>
+                <p className="text-sm text-gray-700">
+                  Yes, we take data security seriously. Your response sheets and personal information are processed securely
+                  and are not shared with third parties without your consent.
+                </p>
+              </div>
+              <div className="space-y-2">
+                <h3 className="text-md font-semibold">Who can use this tool?</h3>
+                <p className="text-sm text-gray-700">
+                  This tool is designed for students appearing for JEE, NEET, and CUET exams.
+                  It can be used by anyone who has their response sheet and wants to analyze their performance.
+                </p>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
       </div>
     </div>
-  </div>
   )
 }
