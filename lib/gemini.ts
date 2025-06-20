@@ -108,13 +108,14 @@ export async function explainQuestionWithAI(
   try {
     const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" })
     const prompt = `
-You are an expert at explaining exam questions and answers. I will provide you with a question, the student's selected answer, and the correct answer. Your task is to provide a clear and concise explanation of why the correct answer is correct and why the student's answer is incorrect.
+You are an expert at explaining exam questions and answers. I will provide you with a question, the student's selected answer, and the correct answer. Your task is to provide a clear and concise explanation of why the correct answer is correct and why the student's answer is incorrect. I will only provide you with the IDs of the answers to identify them, not the direct option number.
 
 QUESTION: ${extractedText}
 STUDENT'S ANSWER ID: ${studentAnswer}
 CORRECT ANSWER ID: ${correctAnswer}
 SUBJECT: ${subject}
 
+NOTE: Do not include any answer IDs in your explanation. Focus on the content of the question and answers. The student's answer id and correct answer id are in sequence. If the correct answer is 2268952746819 (lets say acc to you its option 2) and the student's answer is 2268952746820 it means the student selected one option below the correct answer i.e. option 3, then correctly identify what opton student selected. 
 
 EXPLANATION FORMAT: Provide a detailed explanation in simple language, suitable for a student who may not understand complex terminology. Focus on the key concepts and reasoning behind the correct answer.
 `
