@@ -308,7 +308,7 @@ export default function AnalysisResults({ result, onReset }: AnalysisResultsProp
                               : "secondary"
                         }
                       >
-                        {item.status === "Correct" ? "✅" : item.status === "Incorrect" ? "❌" : "⚪"} {item.status}
+                        {item.status}
                       </Badge>
                     </td>
                     <td className="border border-gray-300 p-2 font-medium">

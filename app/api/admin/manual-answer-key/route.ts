@@ -71,7 +71,7 @@ export async function POST(request: NextRequest) {
       },
       update: {
         totalQuestions: answers.length,
-        totalMarks: answers.length * 4,
+        totalMarks: answers.length * 5,
       },
       create: {
         examName,
@@ -80,11 +80,11 @@ export async function POST(request: NextRequest) {
         shiftName,
         subjectCombination: subjectCombination || null,
         subject,
-        correctMarks: 4,
+        correctMarks: 5,
         incorrectMarks: -1,
         unattemptedMarks: 0,
         totalQuestions: answers.length,
-        totalMarks: answers.length * 4,
+        totalMarks: answers.length * 5,
       },
     })
 

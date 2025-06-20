@@ -124,7 +124,7 @@ export default function HomePage() {
       setMessage("Sample exam history added. You can now analyze the sample response sheet. Visit /dubug in development mode to make yourself admin.");
     }
   }, []);
-  
+
 
 
   // Fetch history from local storage
@@ -166,7 +166,7 @@ export default function HomePage() {
     fetchExams()
   }, [])
 
-  
+
   const fetchExams = async () => {
     try {
       const response = await fetch("/api/exams")
@@ -229,12 +229,12 @@ export default function HomePage() {
       setHistory((prev) => {
         const isDuplicate = prev.some(
           (entry) =>
-        entry.inputType === newHistoryEntry.inputType &&
-        entry.responseInput === newHistoryEntry.responseInput &&
-        entry.selectedExam?.id === newHistoryEntry.selectedExam?.id &&
-        entry.selectedDate === newHistoryEntry.selectedDate &&
-        entry.selectedShift === newHistoryEntry.selectedShift &&
-        entry.selectedCombination === newHistoryEntry.selectedCombination
+            entry.inputType === newHistoryEntry.inputType &&
+            entry.responseInput === newHistoryEntry.responseInput &&
+            entry.selectedExam?.id === newHistoryEntry.selectedExam?.id &&
+            entry.selectedDate === newHistoryEntry.selectedDate &&
+            entry.selectedShift === newHistoryEntry.selectedShift &&
+            entry.selectedCombination === newHistoryEntry.selectedCombination
         )
         return isDuplicate ? prev : [...prev, newHistoryEntry]
       })
@@ -257,6 +257,8 @@ export default function HomePage() {
       if (data.success) {
         if (data.analysis) {
           setAnalysisResult(data.analysis)
+            // Instantly scroll to the top of the page
+            window.scrollTo({ top: 0, behavior: "smooth" });
         } else {
           setShowAnswerKeyForm(true)
           toast({
@@ -368,19 +370,19 @@ export default function HomePage() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 p-4">
       {message && (
-      <div className="absolute top-14 left-0 right-0 z-50">
-        <div className="bg-blue-400 text-white text-center py-3 animate-slide-down flex items-center justify-between px-4">
-        <span>{message}</span>
-        <button
-          className="text-white font-bold"
-          onClick={() => setMessage(null)}
-        >
-          Dismiss
-        </button>
+        <div className="absolute md:block hidden top-16 left-0 right-0 z-50">
+          <div className="bg-blue-400 text-white text-center py-3 animate-slide-down flex items-center justify-between px-4">
+            <span>{message}</span>
+            <button
+              className="text-white font-bold"
+              onClick={() => setMessage(null)}
+            >
+              Dismiss
+            </button>
+          </div>
         </div>
-      </div>
       )}
-      <div className={`${message ? "mt-10" : ""} max-w-6xl mx-auto`}>
+      <div className={`${message ? " mt-0 md:mt-10" : ""} max-w-6xl mx-auto`}>
         {/* Header Section */}
         <div className="text-center mb-8">
           <div className="flex items-center justify-center gap-3 mb-4">

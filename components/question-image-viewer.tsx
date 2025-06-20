@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -86,8 +86,22 @@ export default function QuestionImageViewer({ isOpen, onClose, questionData }: Q
     }
   };
 
+  // Scroll to the explanation section when the explanation is updated
+  useEffect(() => {
+    if (explanation) {
+      const explanationElement = document.querySelector("#explanation");
+      if (explanationElement) {
+        explanationElement.scrollIntoView({ behavior: "smooth" });
+      }
+    }
+  }, [explanation]);
+
   return (
-    <Dialog open={isOpen} onOpenChange={onClose}>
+    <Dialog open={isOpen} onOpenChange={() => {
+      onClose()
+      setExplanation(null);
+      setZoom(1);
+      setRotation(0);}}>
       <DialogContent className="max-w-full max-h-screen overflow-auto p-4 sm:p-6">
         <DialogHeader>
           <div className="flex items-center justify-between flex-wrap gap-2">
@@ -169,17 +183,17 @@ export default function QuestionImageViewer({ isOpen, onClose, questionData }: Q
         </div>
 
         {/* AI Explanation */}
-        <div className="border-t pt-4 mt-4">
+        <div className="border-t pt-4 mt-4"  id="explanation">
           <Button variant="default" size="sm" onClick={fetchExplanation} disabled={loadingExplanation}>
             {loadingExplanation ? <Loader className="animate-spin h-4 w-4" /> : "Get AI Explanation"}
           </Button>
           {explanation && (
             <div className="mt-4 p-4 bg-gray-100 rounded-lg text-sm">
               <strong>Explanation:</strong>
-              <p className="mt-2">
+              <div className="mt-2">
                 <MarkdownRenderer content={explanation} />
               
-              </p>
+              </div>
             </div>
           )}
         </div>
