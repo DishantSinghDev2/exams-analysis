@@ -11,7 +11,6 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Badge } from "@/components/ui/badge"
 import { Upload, Link, FileText, Calendar, Clock, BookOpen, GraduationCap, Paperclip } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
-import { parsePDFResponse } from "@/lib/pdf-parser"
 import type { AnalysisResult } from "@/types"
 import AnalysisResults from "@/components/analysis-results"
 
@@ -130,32 +129,9 @@ export default function HomePage() {
       return
     }
 
-    if (inputType === "file" && !selectedFile) {
-      toast({
-        title: "No File Selected",
-        description: "Please select a PDF file to upload",
-        variant: "destructive",
-      })
-      return
-    }
-
-    if (inputType !== "file" && !responseInput) {
-      toast({
-        title: "Missing Input",
-        description: "Please provide response sheet URL or content",
-        variant: "destructive",
-      })
-      return
-    }
-
     setIsLoading(true)
     try {
       let finalInput = responseInput
-
-      if (inputType === "file" && selectedFile) {
-        const parsedData = await parsePDFResponse(selectedFile)
-        finalInput = JSON.stringify(parsedData)
-      }
 
       const selectedDateObj = availableDates.find((d) => d.id === selectedDate)
       const selectedShiftObj = availableShifts.find((s) => s.id === selectedShift)
@@ -470,10 +446,6 @@ export default function HomePage() {
                     <Upload className="h-4 w-4" />
                     Paste
                   </TabsTrigger>
-                  <TabsTrigger value="file" className="flex items-center gap-2">
-                    <FileText className="h-4 w-4" />
-                    Upload PDF
-                  </TabsTrigger>
                 </TabsList>
                 <TabsContent value="url" className="space-y-2">
                   <Label htmlFor="responseUrl">Response Sheet URL</Label>
@@ -497,16 +469,6 @@ export default function HomePage() {
                   <p className="text-sm text-gray-500">
                     Copy and paste the entire HTML content from your response sheet
                   </p>
-                </TabsContent>
-                <TabsContent value="file" className="space-y-2">
-                  <Label htmlFor="responseFile">Upload PDF Response Sheet</Label>
-                  <Input
-                    id="responseFile"
-                    type="file"
-                    accept=".pdf"
-                    onChange={(e) => setSelectedFile(e.target.files?.[0] || null)}
-                  />
-                  <p className="text-sm text-gray-500">Upload your PDF response sheet file</p>
                 </TabsContent>
               </Tabs>
 
