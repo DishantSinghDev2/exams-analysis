@@ -16,16 +16,13 @@ A comprehensive web application for analyzing exam response sheets with subject-
 
 ```bash
 git clone <repository-url>
-cd exam-response-analyzer
+cd exam-analysis
 npm install
 ```
 
 ### 2. Database Setup
 
 ```bash
-# Create MySQL database
-mysql -u root -p < scripts/init-database.sql
-
 # Configure environment variables
 cp .env.example .env
 # Edit .env with your database credentials
@@ -50,7 +47,7 @@ npm run db:push
 
 ### 5. Admin Configuration
 
-Update the `scripts/init-database.sql` file with your GitHub email address to grant admin access.
+Update the `admins` table to add your GitHub email address to grant admin access. or go to /debug while in development mode.
 
 ### 6. Run the Application
 
@@ -104,6 +101,7 @@ NEXTAUTH_URL="https://your-domain.com"
 NEXTAUTH_SECRET="your-secret-key"
 GITHUB_CLIENT_ID="your-github-client-id"
 GITHUB_CLIENT_SECRET="your-github-client-secret"
+GEMINI_API_KEY="your-gemini-api"
 ```
 
 ## API Endpoints
@@ -111,7 +109,7 @@ GITHUB_CLIENT_SECRET="your-github-client-secret"
 - `POST /api/analyze` - Analyze response sheet
 - `POST /api/submit-answer-key` - Submit answer key for approval
 - `GET /api/admin/pending-keys` - Get pending answer keys (admin)
-- `POST /api/admin/upload-answer-key` - Upload answer key (admin)
+- `POST /api/admin/manual-answer-key` - Upload answer key (admin)
 - `POST /api/admin/approve-key` - Approve answer key (admin)
 - `POST /api/admin/reject-key` - Reject answer key (admin)
 
@@ -129,7 +127,6 @@ MIT License
 ## Production Deployment Checklist
 
 ### Pre-deployment
-- [ ] Update admin emails in `scripts/seed-database.sql`
 - [ ] Set up MySQL database (PlanetScale, Railway, etc.)
 - [ ] Configure GitHub OAuth app
 - [ ] Set up environment variables
@@ -143,6 +140,7 @@ NEXTAUTH_URL="https://your-domain.com"
 NEXTAUTH_SECRET="your-secret-key-min-32-chars"
 GITHUB_CLIENT_ID="your-github-client-id"
 GITHUB_CLIENT_SECRET="your-github-client-secret"
+GEMINI_API_KEY="your-gemini-api"
 ```
 
 ### Database Setup
@@ -160,7 +158,7 @@ npm run db:reset
 ### Features Implemented
 
 ✅ **Complete Student Interface**
-- Response sheet URL/paste/PDF upload
+- Response sheet URL/paste
 - Real-time parsing and analysis
 - Subject-wise performance breakdown
 - Answer key submission for approval
@@ -198,7 +196,7 @@ npm run db:reset
 #### Admin Endpoints (Authenticated)
 - `GET /api/admin/stats` - Get dashboard statistics
 - `GET /api/admin/pending-keys` - Get pending answer keys
-- `POST /api/admin/upload-answer-key` - Upload answer key
+- `POST /api/admin/manual-answer-key` - Upload answer key
 - `POST /api/admin/approve-key` - Approve pending answer key
 - `POST /api/admin/reject-key` - Reject pending answer key
 
