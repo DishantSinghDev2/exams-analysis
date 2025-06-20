@@ -148,7 +148,7 @@ export default function AdminDebug() {
                 <Label htmlFor="name">Name</Label>
                 <Input
                   id="name"
-                  placeholder="Dishant Singh"
+                  placeholder="Utkarsh Kumar"
                   value={newName}
                   onChange={(e) => setNewName(e.target.value)}
                 />

@@ -64,6 +64,7 @@ export default function HomePage() {
   const { toast } = useToast()
   const [selectedFile, setSelectedFile] = useState<File | null>(null)
   const [history, setHistory] = useState<ExamHistory[] | []>([])
+  const [message, setMessage] = useState<string | null>(null)
 
   // Check if the URL contains ?mode=with_sample and add to history
   useEffect(() => {
@@ -119,8 +120,11 @@ export default function HomePage() {
         );
         return isDuplicate ? prev : [...prev, sampleHistoryEntry];
       });
+
+      setMessage("Sample exam history added. You can now analyze the sample response sheet. Visit /dubug in development mode to make yourself admin.");
     }
   }, []);
+
 
   // Fetch history from local storage
   useEffect(() => {
@@ -362,6 +366,19 @@ export default function HomePage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 p-4">
+      {message && (
+      <div className="absolute top-14 left-0 right-0 z-50">
+        <div className="bg-blue-400 text-white text-center py-3 animate-slide-down flex items-center justify-between px-4">
+        <span>{message}</span>
+        <button
+          className="text-white font-bold"
+          onClick={() => setMessage(null)}
+        >
+          Dismiss
+        </button>
+        </div>
+      </div>
+      )}
       <div className="max-w-6xl mx-auto">
         {/* Header Section */}
         <div className="text-center mb-8">
