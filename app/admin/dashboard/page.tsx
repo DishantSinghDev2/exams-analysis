@@ -637,7 +637,7 @@ export default function AdminDashboard() {
         )}
 
         <Tabs defaultValue="exams" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-6">
+          <TabsList className="grid w-full grid-cols-5">
             <TabsTrigger value="exams">Manage Exams</TabsTrigger>
             <TabsTrigger value="manual">Answer Key Entry</TabsTrigger>
             <TabsTrigger value="marking">Marking Schemes</TabsTrigger>

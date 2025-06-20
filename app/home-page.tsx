@@ -385,9 +385,9 @@ export default function HomePage() {
         <div className="text-center mb-8">
           <div className="flex items-center justify-center gap-3 mb-4">
             <GraduationCap className="h-10 w-10 text-blue-600" />
-            <h1 className="text-4xl font-bold text-gray-900">Exam Response Analyzer</h1>
+            <h1 className="sm:text-3xl text-2xl md:text-4xl font-bold text-gray-900">Exam Response Analyzer</h1>
           </div>
-          <p className="text-lg text-gray-600 mb-4">
+          <p className="md:text-lg text-gray-600 mb-4">
             Calculate Your JEE, NEET, and CUET Exam Marks with Ease
           </p>
           {selectedExam && (
@@ -552,7 +552,7 @@ export default function HomePage() {
 
               {/* Response Input Tabs */}
               <Tabs value={inputType} onValueChange={(value) => setInputType(value as "url" | "paste")}>
-                <TabsList className="grid w-full grid-cols-3">
+                <TabsList className="grid w-full grid-cols-2">
                   <TabsTrigger value="url" className="flex items-center gap-2">
                     <Link className="h-4 w-4" />
                     URL
