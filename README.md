@@ -21,7 +21,7 @@ Follow these simple steps to set up and run the application:
 Start by cloning the project repository and installing dependencies:
 
 ```bash
-git clone <repository-url>
+git clone https://github.com/DishantSinghDev2/exams-analysis.git
 cd exam-analysis
 npm install
 ```
