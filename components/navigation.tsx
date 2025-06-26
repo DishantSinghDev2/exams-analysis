@@ -41,12 +41,12 @@ export function Navigation() {
               )
             })}
 
-            {session.data && <Link href="/admin/dashboard">
+            <Link href="/admin/dashboard">
               <Button variant="outline" size="sm" className="flex items-center space-x-2">
                 <Settings className="h-4 w-4" />
                 <span>Admin</span>
               </Button>
-            </Link>}
+            </Link>
           </div>
 
           {/* Mobile Navigation */}

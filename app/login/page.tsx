@@ -93,9 +93,6 @@ export default function AdminLogin() {
               {isLoading ? "Signing in..." : "Sign in with GitHub"}
             </Button>
 
-            <div className="text-center text-sm text-gray-500">
-              <p>GitHub User: DishantSinghDev2 (ID: 122022552)</p>
-            </div>
           </CardContent>
         </Card>
 
@@ -137,7 +134,7 @@ export default function AdminLogin() {
                   <h4 className="font-medium text-green-800">Alternative:</h4>
                   <p className="text-sm text-gray-600">
                     Use the{" "}
-                    <Link href="/admin/debug" className="text-green-600 underline">
+                    <Link href="/debug" className="text-green-600 underline">
                       debug panel
                     </Link>{" "}
                     to manually add your admin access
@@ -146,7 +143,7 @@ export default function AdminLogin() {
               </div>
 
               {process.env.NODE_ENV === "development" && (
-                <Link href="/admin/debug">
+                <Link href="/debug">
                   <Button variant="outline" className="w-full">
                     Open Debug Panel
                   </Button>

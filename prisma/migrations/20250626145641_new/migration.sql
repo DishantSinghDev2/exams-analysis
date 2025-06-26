@@ -90,6 +90,7 @@ CREATE TABLE `answer_keys` (
 
     INDEX `answer_keys_examName_examYear_examDate_shiftName_idx`(`examName`, `examYear`, `examDate`, `shiftName`),
     INDEX `answer_keys_isApproved_idx`(`isApproved`),
+    UNIQUE INDEX `answer_keys_examName_examYear_examDate_shiftName_subjectComb_key`(`examName`, `examYear`, `examDate`, `shiftName`, `subjectCombination`, `subject`),
     PRIMARY KEY (`id`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
@@ -109,6 +110,7 @@ CREATE TABLE `marking_schemes` (
     `totalMarks` INTEGER NOT NULL DEFAULT 200,
 
     INDEX `marking_schemes_examName_examYear_examDate_shiftName_idx`(`examName`, `examYear`, `examDate`, `shiftName`),
+    UNIQUE INDEX `marking_schemes_examName_examYear_examDate_shiftName_subject_key`(`examName`, `examYear`, `examDate`, `shiftName`, `subjectCombination`, `subject`),
     PRIMARY KEY (`id`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 

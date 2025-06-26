@@ -1,18 +1,24 @@
 # Exam Response Analyzer
 
-A comprehensive web application for analyzing exam response sheets with subject-wise performance breakdown.
+A user-friendly web application designed to analyze exam response sheets with detailed subject-wise performance breakdowns.
 
-## Features
+## Features Overview
 
-- **Student Interface**: Upload response sheets and get detailed analysis
-- **Admin Dashboard**: Manage answer keys and approve submissions
-- **Blog System**: SEO-friendly blog posts for exam preparation
-- **GitHub OAuth**: Secure admin authentication
-- **MySQL Database**: Robust data storage with Prisma ORM
+- **Student Interface**: Easily upload response sheets and receive detailed analysis.
+- **Admin Dashboard**: Manage answer keys, approve submissions, and monitor statistics.
+- **Blog System**: Create and manage SEO-friendly blog posts for exam preparation.
+- **GitHub OAuth**: Secure admin authentication using GitHub accounts.
+- **MySQL Database**: Reliable data storage powered by Prisma ORM.
 
-## Setup Instructions
+---
 
-### 1. Clone and Install
+## Getting Started
+
+Follow these simple steps to set up and run the application:
+
+### 1. Clone the Repository
+
+Start by cloning the project repository and installing dependencies:
 
 ```bash
 git clone <repository-url>
@@ -20,196 +26,144 @@ cd exam-analysis
 npm install
 ```
 
-### 2. Database Setup
+---
 
-```bash
-# Configure environment variables
-cp .env.example .env
-# Edit .env with your database credentials
-```
+### 2. Configure GitHub OAuth
 
-### 3. Prisma Setup
+Set up GitHub OAuth for secure admin authentication:
 
-```bash
-# Generate Prisma client
-npm run db:generate
+1. Log in to your GitHub account.
+2. Navigate to **Settings > Developer settings > OAuth Apps**.
+3. Create a new OAuth App with the following details:
+    - **Authorization callback URL**: `http://localhost:3000/api/auth/callback/github`
+4. Copy the **Client ID** and **Client Secret** into the `.env` file.
 
-# Push schema to database
-npm run db:push
-```
+---
 
-### 4. GitHub OAuth Setup
+### 3. Set Up the Database
 
-1. Go to GitHub Settings > Developer settings > OAuth Apps
-2. Create a new OAuth App
-3. Set Authorization callback URL to: `http://localhost:3000/api/auth/callback/github`
-4. Copy Client ID and Client Secret to `.env`
+Prepare the database configuration:
 
-### 5. Admin Configuration
+1. Copy the example environment file:
+    ```bash
+    cp .env.example .env
+    ```
+2. Open `.env` and update the following:
+    - **DATABASE_URL**: Your database connection string.
+    - **GitHub OAuth credentials**: Add the Client ID and Client Secret.
 
-Update the `admins` table to add your GitHub email address to grant admin access. or go to /debug while in development mode.
+---
 
-### 6. Run the Application
+### 4. Initialize Prisma
+
+Generate the Prisma client and seed sample data:
+
+1. Update the `email` field in the `admins` table located in `prisma/seed.ts`.
+2. Run the following command:
+    ```bash
+    npm run db:setup
+    ```
+
+---
+
+### 5. Run the Application
+
+Start the development server:
 
 ```bash
 npm run dev
 ```
 
-Visit `http://localhost:3000` to access the application.
+Visit `http://localhost:3000?mode=with_sample` to access the application. Adding `?mode=with_sample` enables sample data for testing.
 
-## Usage
+---
+
+## How to Use
 
 ### For Students
 
-1. Enter exam details (date, shift, subject combination)
-2. Upload response sheet URL or paste content
-3. Get detailed analysis if answer key is available
-4. Submit answer key for approval if not available
+1. Enter exam details (e.g., date, shift, subject combination).
+2. Upload the response sheet URL or paste its content.
+3. View detailed analysis if the answer key is available.
+4. Submit an answer key for approval if not available.
 
 ### For Admins
 
-1. Login with authorized GitHub account
-2. Upload answer keys directly
-3. Review and approve student-submitted answer keys
-4. Manage marking schemes
+1. Log in using your authorized GitHub account.
+2. Upload answer keys directly.
+3. Review and approve student-submitted answer keys.
+4. Manage marking schemes and monitor statistics.
+
+---
 
 ### Blog Management
 
-1. Create markdown files in `content/blog/[exam]/[year]/`
-2. Use proper frontmatter for metadata
-3. Files are automatically served at `/blog/[exam]/[year]/[filename]`
+Create and manage blog posts for exam preparation:
 
-## Deployment
+1. Add markdown files in the `content/blog/[exam]/[year]/` directory.
+2. Include proper frontmatter for metadata (e.g., title, date, tags).
+3. Blog posts are automatically served at `/blog/[exam]/[year]/[filename]`.
 
-### Vercel Deployment
+---
 
-1. Push code to GitHub
-2. Connect repository to Vercel
-3. Add environment variables in Vercel dashboard
-4. Deploy
+## Features Implemented
 
-### Database Hosting
+### Student Interface
+- Upload response sheets via URL or paste content.
+- Real-time parsing and analysis.
+- Subject-wise performance breakdown.
+- Submit answer keys for approval.
+- Detailed question-by-question analysis.
 
-- Use PlanetScale, Railway, or any MySQL hosting service
-- Update `DATABASE_URL` in environment variables
+### Admin Dashboard
+- GitHub OAuth authentication with email restrictions.
+- Manage answer keys and pending approvals.
+- View statistics and perform bulk operations.
 
-## Environment Variables
+### Blog System
+- Markdown-based articles with SEO-friendly URLs.
+- Organized by exam, year, and subject.
+- Responsive design for all devices.
 
-```env
-DATABASE_URL="mysql://username:password@host:port/database"
-NEXTAUTH_URL="https://your-domain.com"
-NEXTAUTH_SECRET="your-secret-key"
-GITHUB_CLIENT_ID="your-github-client-id"
-GITHUB_CLIENT_SECRET="your-github-client-secret"
-GEMINI_API_KEY="your-gemini-api"
-```
+### Production Features
+- Error handling and feedback mechanisms.
+- Input validation and sanitization.
+- Optimized database relationships and constraints.
+- SEO enhancements for better visibility.
 
-## API Endpoints
+---
 
-- `POST /api/analyze` - Analyze response sheet
-- `POST /api/submit-answer-key` - Submit answer key for approval
-- `GET /api/admin/pending-keys` - Get pending answer keys (admin)
-- `POST /api/admin/manual-answer-key` - Upload answer key (admin)
-- `POST /api/admin/approve-key` - Approve answer key (admin)
-- `POST /api/admin/reject-key` - Reject answer key (admin)
+## API Endpoints Reference
 
-## Contributing
+### Public Endpoints
+- `POST /api/analyze` - Analyze response sheets.
+- `POST /api/submit-answer-key` - Submit answer keys for approval.
+- `POST /api/parse-pdf` - Parse PDF files.
 
-1. Fork the repository
-2. Create a feature branch
-3. Make your changes
-4. Submit a pull request
+### Admin Endpoints (Authenticated)
+- `GET /api/admin/stats` - View dashboard statistics.
+- `GET /api/admin/pending-keys` - List pending answer keys.
+- `POST /api/admin/manual-answer-key` - Upload answer keys manually.
+- `POST /api/admin/approve-key` - Approve submitted answer keys.
+- `POST /api/admin/reject-key` - Reject submitted answer keys.
 
-## License
+---
 
-MIT License
+## Troubleshooting Guide
 
-## Production Deployment Checklist
+### Common Issues
+1. **Database Connection**: Ensure the `DATABASE_URL` in `.env` is correct.
+2. **GitHub OAuth**: Verify the callback URL matches exactly.
+4. **Admin Access**: Ensure your email is listed in the `admins` table.
 
-### Pre-deployment
-- [ ] Set up MySQL database (PlanetScale, Railway, etc.)
-- [ ] Configure GitHub OAuth app
-- [ ] Set up environment variables
-- [ ] Test all functionality locally
+### Performance Optimization
+- Add database indexes for frequently queried fields.
+- Optimize images using Next.js.
+- Use static generation for blog posts.
+- Cache answer keys for faster access.
 
-### Environment Variables
-```env
-# Required for production
-DATABASE_URL="mysql://username:password@host:port/database"
-NEXTAUTH_URL="https://your-domain.com"
-NEXTAUTH_SECRET="your-secret-key-min-32-chars"
-GITHUB_CLIENT_ID="your-github-client-id"
-GITHUB_CLIENT_SECRET="your-github-client-secret"
-GEMINI_API_KEY="your-gemini-api"
-```
+---
 
-### Database Setup
-```bash
-# Initialize database
-npm run db:push
+## Screenshot
 
-# Seed with sample data
-npm run db:seed
-
-# Reset database (development only)
-npm run db:reset
-```
-
-### Features Implemented
-
-✅ **Complete Student Interface**
-- Response sheet URL/paste
-- Real-time parsing and analysis
-- Subject-wise performance breakdown
-- Answer key submission for approval
-- Detailed question-by-question analysis
-
-✅ **Complete Admin Interface**
-- GitHub OAuth authentication with email restrictions
-- Answer key upload and management
-- Pending approval workflow
-- Admin statistics dashboard
-- Bulk operations support
-
-✅ **Complete Blog System**
-- Markdown-based articles
-- SEO-friendly URLs
-- Organized by exam/year/subject
-- Automatic content discovery
-- Responsive design
-
-✅ **Production Features**
-- Error boundaries and handling
-- Loading states and feedback
-- Input validation and sanitization
-- Database relationships and constraints
-- Responsive design
-- SEO optimization
-
-### API Endpoints Reference
-
-#### Public Endpoints
-- `POST /api/analyze` - Analyze response sheet
-- `POST /api/submit-answer-key` - Submit answer key for approval
-- `POST /api/parse-pdf` - Parse PDF file
-
-#### Admin Endpoints (Authenticated)
-- `GET /api/admin/stats` - Get dashboard statistics
-- `GET /api/admin/pending-keys` - Get pending answer keys
-- `POST /api/admin/manual-answer-key` - Upload answer key
-- `POST /api/admin/approve-key` - Approve pending answer key
-- `POST /api/admin/reject-key` - Reject pending answer key
-
-### Troubleshooting
-
-#### Common Issues
-1. **Database Connection**: Ensure DATABASE_URL is correct
-2. **GitHub OAuth**: Check callback URL matches exactly
-3. **PDF Parsing**: Large files may timeout, use paste method
-4. **Admin Access**: Verify email is in admin table
-
-#### Performance Optimization
-- Database indexes on frequently queried fields
-- Image optimization with Next.js
-- Static generation for blog posts
-- Caching for answer keys
+![Application Screenshot with sample data usage](https://freeimghost.vercel.app/i/5hQxQZCk/Screenshot-2025-06-26-at-8-39-49-PM-png.png)

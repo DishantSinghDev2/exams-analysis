@@ -8,7 +8,8 @@
     "lint": "next lint",
     "start": "next start",
     "db:push": "prisma db push",
-    "db:seed": "prisma db seed",
+    "db:setup": "prisma migrate dev --create-only && prisma db push --force-reset && ts-node prisma/seed.ts",
+    "db:seed": "ts-node prisma/seed.ts",
     "db:reset": "prisma migrate reset --force --skip-seed"
   },
   "dependencies": {
@@ -87,6 +88,7 @@
     "@types/react-dom": "^18",
     "postcss": "^8.5",
     "tailwindcss": "^3.4.17",
+    "ts-node": "^10.9.2",
     "typescript": "^5"
   }
 }

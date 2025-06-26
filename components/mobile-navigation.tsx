@@ -14,6 +14,7 @@ export function MobileNavigation() {
   const navItems = [
     { href: "/", label: "Analyzer", icon: BarChart3 },
     { href: "/blog", label: "Blog", icon: BookOpen },
+    { href: "/admin/dashboard", label: "Admin", icon: Settings },
   ]
 
   return (

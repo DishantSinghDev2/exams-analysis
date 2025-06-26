@@ -71,42 +71,44 @@ export default function HomePage() {
     const urlParams = new URLSearchParams(window.location.search);
     if (urlParams.get("mode") === "with_sample") {
       const sampleHistoryEntry: ExamHistory = {
-        inputType: "url",
-        responseInput: "https://cdn3.digialm.com//per/g28/pub/2083/touchstone/AssessmentQPHTMLMode1//2083O25179/2083O25179S54D18779/1749100892434601/HR10004902_2083O25179S54D18779E1.html",
-        selectedExam: {
-          id: "cmc29ar880000urqgdmq44g8y",
-          name: "CUET",
-          year: "2025",
-          description: "The Common University Entrance Test (CUET) is a standardized entrance examination administered by the National Testing Agency (NTA) for undergraduate (UG) admissions to participating central, state, and private universities in India",
-          hasSubjectCombinations: true,
-          displayName: "CUET 2025",
-          dates: [
-            {
-              id: "cmc29ayvj0002urqgzn66siow",
-              date: "2025-06-03T00:00:00.000Z",
-              formattedDate: "3rd June 2025",
-              shifts: [
+        "inputType": "url",
+        "responseInput": "https://cdn3.digialm.com//per/g28/pub/2083/touchstone/AssessmentQPHTMLMode1//2083O25179/2083O25179S46D16220/17486838102503203/HR10004902_2083O25179S46D16220E1.html",
+        "selectedExam": {
+            "id": "cmcdijmao0001ur1s3xael7bh",
+            "name": "CUET",
+            "year": "2025",
+            "description": "Common University Entrance Test",
+            "hasSubjectCombinations": true,
+            "displayName": "CUET 2025",
+            "dates": [
                 {
-                  id: "cmc29bi6h0004urqggjomimrs",
-                  name: "Shift 2, Afternoon",
-                  startTime: undefined,
-                  endTime: undefined,
-                  combinations: [
-                    {
-                      id: "cmc29d66z0006urqg9wbhgfzh",
-                      name: "Combination 2",
-                      subjects: ["Biology"],
-                    },
-                  ],
-                },
-              ],
-            },
-          ],
+                    "id": "cmcdijmao0002ur1s5arqztdm",
+                    "date": "2025-05-30T00:00:00.000Z",
+                    "formattedDate": "30th May 2025",
+                    "shifts": [
+                        {
+                            "id": "cmcdijmap0003ur1scj94mxvd",
+                            "name": "Shift 2, Afternoon",
+                            "startTime": "02:00 PM",
+                            "endTime": "05:00 PM",
+                            "combinations": [
+                                {
+                                    "id": "cmcdijmap0004ur1sbhga0zao",
+                                    "name": "Combination 2",
+                                    "subjects": [
+                                        "Chemistry"
+                                    ]
+                                }
+                            ]
+                        }
+                    ]
+                }
+            ]
         },
-        selectedDate: "cmc29ayvj0002urqgzn66siow",
-        selectedShift: "cmc29bi6h0004urqggjomimrs",
-        selectedCombination: "cmc29d66z0006urqg9wbhgfzh",
-      };
+        "selectedDate": "cmcdijmao0002ur1s5arqztdm",
+        "selectedShift": "cmcdijmap0003ur1scj94mxvd",
+        "selectedCombination": "cmcdijmap0004ur1sbhga0zao"
+    }
 
       setHistory((prev) => {
         const isDuplicate = prev.some(

@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Textarea } from "@/components/ui/textarea"
-import { Info, Plus, User, Github, Mail, AlertTriangle } from "lucide-react"
+import { Info, Plus, User, Github, Mail } from "lucide-react"
 
 interface Admin {
   id: string
@@ -111,14 +111,6 @@ export default function AdminDebug() {
           <p className="text-gray-600">Development only - Manage admin users and debug GitHub issues</p>
         </div>
 
-        <Alert className="mb-6" variant="destructive">
-          <AlertTriangle className="h-4 w-4" />
-          <AlertDescription>
-            <strong>GitHub Email Issue Detected:</strong> Your GitHub email is private. Follow the steps below to fix
-            this.
-          </AlertDescription>
-        </Alert>
-
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
           <Card>
             <CardHeader>
@@ -131,7 +123,7 @@ export default function AdminDebug() {
               <Alert>
                 <Info className="h-4 w-4" />
                 <AlertDescription>
-                  Add your email directly to bypass GitHub email issues. Use GitHub ID: <strong>122022552</strong>
+                  Add your email directly to bypass GitHub email issues.
                 </AlertDescription>
               </Alert>
               <div>
