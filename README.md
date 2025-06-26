@@ -13,7 +13,7 @@ A user-friendly web application designed to analyze exam response sheets with de
 ---
 
 ## Video Demo
-![Video](https://raw.githubusercontent.com/DishantSinghDev2/exams-analysis/refs/heads/main/Screen%20Recording%202025-06-26%20at%209.01.27%20PM%20(online-video-cutter.com).mp4)
+[Watch the Video](https://jumpshare.com/s/SusiNkh8NLsrGb2dC69X)
 
 ## Getting Started
 
